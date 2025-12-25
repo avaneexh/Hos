@@ -76,6 +76,7 @@ model DishSize {
   dish      Dish   @relation(fields: [dishId], references: [id])
 
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Addon {
@@ -86,6 +87,7 @@ model Addon {
   dishes    DishAddon[]
 
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model DishAddon {
@@ -96,6 +98,8 @@ model DishAddon {
 
   addonId String
   addon   Addon  @relation(fields: [addonId], references: [id])
+
+  updatedAt DateTime @updatedAt
 
   @@unique([dishId, addonId])
 }
