@@ -18,11 +18,17 @@ enum UserRole {
   ADMIN
   USER
   DELEVERYBOY
+  RESTURANT
 }
 
 enum DishStatus {
   AVAILABLE
   UNAVAILABLE
+}
+
+enum FoodType {
+  VEG
+  NON_VEG
 }
 
 
@@ -33,6 +39,9 @@ model User {
   image     String?
   role      UserRole @default(USER)
   password  String
+
+  ratings   DishRating[]  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -58,11 +67,15 @@ model Dish {
   basePrice   Int?        
   status      DishStatus  @default(AVAILABLE)
 
+  foodType    FoodType
+
   categoryId  String
   category    Category   @relation(fields: [categoryId], references: [id])
 
   sizes       DishSize[]
   addons      DishAddon[]
+  ratings     DishRating[]
+  allergens   DishAllergen[] 
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -103,3 +116,42 @@ model DishAddon {
 
   @@unique([dishId, addonId])
 }
+
+model DishRating {
+  id        String   @id @default(uuid())
+  rating    Int      
+  review    String?  
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+
+  dishId    String
+  dish      Dish     @relation(fields: [dishId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, dishId]) 
+}
+
+model Allergen {
+  id        String @id @default(uuid())
+  name      String // e.g. "Milk", "Gluten"
+  icon      String? 
+
+  dishes    DishAllergen[]
+
+  createdAt DateTime @default(now())
+}
+
+model DishAllergen {
+  id         String   @id @default(uuid())
+
+  dishId     String
+  dish       Dish     @relation(fields: [dishId], references: [id])
+
+  allergenId String
+  allergen   Allergen @relation(fields: [allergenId], references: [id])
+
+  @@unique([dishId, allergenId])
+}
+
