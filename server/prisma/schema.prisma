@@ -37,3 +37,65 @@ model User {
   updatedAt DateTime @updatedAt
 
 }
+
+model Category {
+  id        String   @id @default(uuid())
+  name      String
+  image     String?
+  order     Int      @default(0)
+
+  dishes    Dish[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Dish {
+  id          String      @id @default(uuid())
+  name        String
+  description String?
+  image       String?
+  basePrice   Int?        
+  status      DishStatus  @default(AVAILABLE)
+
+  categoryId  String
+  category    Category   @relation(fields: [categoryId], references: [id])
+
+  sizes       DishSize[]
+  addons      DishAddon[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model DishSize {
+  id        String @id @default(uuid())
+  name      String 
+  price     Int    
+  dishId    String
+  dish      Dish   @relation(fields: [dishId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+model Addon {
+  id        String @id @default(uuid())
+  name      String
+  price     Int
+
+  dishes    DishAddon[]
+
+  createdAt DateTime @default(now())
+}
+
+model DishAddon {
+  id      String @id @default(uuid())
+
+  dishId  String
+  dish    Dish   @relation(fields: [dishId], references: [id])
+
+  addonId String
+  addon   Addon  @relation(fields: [addonId], references: [id])
+
+  @@unique([dishId, addonId])
+}
