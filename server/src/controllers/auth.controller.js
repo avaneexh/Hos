@@ -1,14 +1,18 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { db } from "../lib/db.js";          
-import { UserRole } from "@prisma/client";
+import { prisma } from "../lib/db.js";          
+
+
+import pkg from '@prisma/client';
+const { UserRole } = pkg;
+
 
 
 export const register = async (req, res) => {
     const {email, password, name} = req.body;
 
     try {
-        const existingUser = await db.user.findUnique({
+        const existingUser = await prisma.user.findUnique({
             where:{
                 email
             }
@@ -22,7 +26,7 @@ export const register = async (req, res) => {
 
         const hashedPassword =  await bcrypt.hash(password, 10);
 
-        const newUser = await db.user.create({
+        const newUser = await prisma.user.create({
             data:{
                 email,
                 password:hashedPassword,
@@ -39,7 +43,7 @@ export const register = async (req, res) => {
             httpOnly:true,
             sameSite:"none",
             secure:process.env.NODE_ENV !== "development",
-            maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days 
+            maxAge: 1000 * 60 * 60 * 24 * 7,
         })
 
         res.status(201).json({
@@ -65,7 +69,7 @@ export const register = async (req, res) => {
 export const login = async (req, res) => {
     const {email, password} = req.body;
     try {
-        const user = await db.user.findUnique({
+        const user = await prisma.user.findUnique({
             where:{
                 email
             }
@@ -93,7 +97,7 @@ export const login = async (req, res) => {
             httpOnly:true,
             sameSite:"none",
             secure:process.env.NODE_ENV !== "development",
-            maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days 
+            maxAge: 1000 * 60 * 60 * 24 * 7, 
         })
 
         res.status(200).json({

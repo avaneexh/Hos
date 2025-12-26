@@ -4,6 +4,9 @@ import cookieParser from "cookie-parser"
 import cors from "cors"
 
 
+import authRoutes from "./routes/auth.routes.js";
+
+
 dotenv.config();
 
 
@@ -24,7 +27,7 @@ app.get("/", (req, res) =>{
     res.send("Hello From HOS🔥🔥")
 })
 
-
+app.use("/api/v1/auth", authRoutes);
 
 app.listen(process.env.PORT, ()=> {
     console.log("Server is running on port 8000")
