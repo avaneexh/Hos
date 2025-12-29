@@ -15,10 +15,7 @@ function App() {
         />
 
         <Route
-          path="/signup"
-          element={!authUser ? <SignUpPage /> : <Navigate to="/dashboard" replace />}
         />
-        
         
         <Route element={<AdminRoute />}>
           <Route
