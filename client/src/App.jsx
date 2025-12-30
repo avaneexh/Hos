@@ -10,8 +10,6 @@ function App() {
           
         </Route>
         <Route
-          path="/login"
-          element={!authUser ? <LoginPage /> : <Navigate to="/dashboard" replace />}
         />
 
         <Route
