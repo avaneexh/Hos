@@ -19,7 +19,6 @@ const Navbar = () => {
               Restaurant
             </span>
           </Link>
-
           <div className="flex items-center gap-4">
             <Link
               to="/menu"
@@ -27,7 +26,6 @@ const Navbar = () => {
             >
               Menu
             </Link>
-
             <Link
               to="/login"
               className="rounded-full bg-[#8B5E3C] px-4 py-1.5 text-sm font-medium text-[#FDFBF8] hover:bg-[#7A4F32] transition"
