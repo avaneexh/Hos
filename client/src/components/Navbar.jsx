@@ -19,6 +19,7 @@ const Navbar = () => {
               Restaurant
             </span>
           </Link>
+          
           <div className="flex items-center gap-4">
             <Link
               to="/menu"
