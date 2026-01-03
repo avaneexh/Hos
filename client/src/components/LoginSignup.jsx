@@ -3,6 +3,8 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
+import { Eye, EyeOff } from "lucide-react";
+
 
 
 const loginSchema = z.object({
@@ -47,6 +49,8 @@ Input.displayName = "Input";
 
 const LoginSignup = ({ onClose }) => {
   const [mode, setMode] = useState("login");
+  const [showPassword, setShowPassword] = useState(false);
+
 
   const schema = useMemo(
     () => (mode === "login" ? loginSchema : signupSchema),
@@ -124,13 +128,28 @@ const LoginSignup = ({ onClose }) => {
             error={errors.email}
           />
 
-          <Input
-            label="Password *"
-            type="password"
-            placeholder="Password"
-            {...register("password")}
-            error={errors.password}
-          />
+        <div className="relative">
+            <Input
+                label="Password *"
+                type={showPassword ? "text" : "password"}
+                placeholder="Password"
+                {...register("password")}
+                error={errors.password}
+            />
+
+            <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute right-4 top-9 text-black/50 hover:text-black transition"
+            >
+                {showPassword ? (
+                <EyeOff className="h-4 w-4" />
+                ) : (
+                <Eye className="h-4 w-4" />
+                )}
+            </button>
+        </div>
+
 
           {mode === "login" && (
             <div className="flex items-center justify-between text-sm ">
