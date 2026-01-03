@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import LoginSignup from "../components/LoginSignup";
+import { User } from "lucide-react";
+
 
 const LOGO_URL =
   "https://res.cloudinary.com/duxy05sxc/image/upload/v1766947230/hos_logo_xud1dk.svg";
@@ -27,8 +29,9 @@ const Navbar = () => {
 
               <button
                 onClick={() => setOpenAuth(true)}
-                className="rounded-xl bg-black/5 px-4 py-3 text-sm font-medium hover:bg-[#cdc5c0]"
+                className="flex items-center gap-2 rounded-xl bg-black/5 px-4 py-3 cursor-pointer text-sm font-medium hover:bg-[#cdc5c0] hover:text-[#8B5E3C]"
               >
+               <User className="h-4 w-4" />
                 Login
               </button>
             </div>
