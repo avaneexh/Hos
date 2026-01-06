@@ -4,6 +4,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
 import { Eye, EyeOff } from "lucide-react";
+import { useAuthStore } from "../store/useAuthStore";
 
 
 
@@ -50,6 +51,7 @@ Input.displayName = "Input";
 const LoginSignup = ({ onClose }) => {
   const [mode, setMode] = useState("login");
   const [showPassword, setShowPassword] = useState(false);
+  const { signUp, isSigningUp,  login, isLoggingIn  } = useAuthStore();
 
 
   const schema = useMemo(
@@ -66,14 +68,12 @@ const LoginSignup = ({ onClose }) => {
     resolver: zodResolver(schema),
   });
 
-  const onSubmit = async (data) => {
+  const onSubmit = async (payload) => {
     try {
       const url =
         mode === "login"
-          ? "/api/auth/login"
-          : "/api/auth/signup";
-
-      await axios.post(url, data);
+          ? await login(payload)
+          : await signUp(payload);
       reset();
       onClose();
     } catch (error) {
@@ -160,10 +160,10 @@ const LoginSignup = ({ onClose }) => {
           )}
 
           <button
-            disabled={isSubmitting}
+            disabled={isSigningUp || isLoggingIn}
             className="mt-2 w-full rounded-lg bg-[#9C3F24] py-3 text-sm font-medium text-white hover:bg-[#87361F] disabled:opacity-60 hover:cursor-pointer"
           >
-            {isSubmitting
+            {isSigningUp || isLoggingIn
               ? "Please wait..."
               : mode === "login"
               ? "Login"
