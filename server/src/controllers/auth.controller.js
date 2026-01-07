@@ -17,11 +17,12 @@ export const register = async (req, res) => {
         });
     }
 
-    const ukPhoneRegex = /^(?:\+44|0)7\d{9}$/;
+    const ukPhoneRegex = /^(?:\+?44|0)?7\d{9}$/;
+
 
     if (!ukPhoneRegex.test(phone)) {
         return res.status(400).json({
-            error: "Invalid UK phone number"
+            error: "Invalid phone number"
         });
     }
 
@@ -29,7 +30,7 @@ export const register = async (req, res) => {
         ? "+44" + phone.slice(1)
         : phone;
 
-    const name = `${firstName} ${lastName || ""}`.trim();
+    const name = `${firstName.trim()} ${lastName || ""}`.trim();
 
     try {
         const existingUser = await prisma.user.findUnique({
@@ -42,21 +43,14 @@ export const register = async (req, res) => {
             });
         }
 
-        const existingPhone = await prisma.user.findUnique({
-            where: { phone: normalizedPhone }
-        });
-
-        if (existingPhone) {
-            return res.status(400).json({
-                error: "Phone number already registered"
-            });
-        }
 
         const hashedPassword = await bcrypt.hash(password, 10);
+        // console.log("normalizedPhone", normalizedPhone);
+        
 
         const newUser = await prisma.user.create({
             data: {
-                email,
+                email: email.toLowerCase(),
                 password: hashedPassword,
                 name,
                 phone: normalizedPhone,
