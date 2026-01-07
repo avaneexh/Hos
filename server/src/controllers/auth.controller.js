@@ -9,62 +9,94 @@ const { UserRole } = pkg;
 
 
 export const register = async (req, res) => {
-    const {email, password, name} = req.body;
+    const { email, password, firstName, lastName, phone } = req.body;
+
+    if (!email || !password || !firstName || !phone) {
+        return res.status(400).json({
+            error: "All fields are required"
+        });
+    }
+
+    const ukPhoneRegex = /^(?:\+44|0)7\d{9}$/;
+
+    if (!ukPhoneRegex.test(phone)) {
+        return res.status(400).json({
+            error: "Invalid UK phone number"
+        });
+    }
+
+    const normalizedPhone = phone.startsWith("0")
+        ? "+44" + phone.slice(1)
+        : phone;
+
+    const name = `${firstName} ${lastName || ""}`.trim();
 
     try {
         const existingUser = await prisma.user.findUnique({
-            where:{
-                email
-            }
-        })
+            where: { email }
+        });
 
-        if(existingUser){
+        if (existingUser) {
             return res.status(400).json({
-                error:"User already Exists"
-            })
+                error: "User already exists"
+            });
         }
 
-        const hashedPassword =  await bcrypt.hash(password, 10);
+        const existingPhone = await prisma.user.findUnique({
+            where: { phone: normalizedPhone }
+        });
+
+        if (existingPhone) {
+            return res.status(400).json({
+                error: "Phone number already registered"
+            });
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
 
         const newUser = await prisma.user.create({
-            data:{
+            data: {
                 email,
-                password:hashedPassword,
+                password: hashedPassword,
                 name,
-                role:UserRole.USER
+                phone: normalizedPhone,
+                role: UserRole.USER
             }
-        })
+        });
 
-        const token = jwt.sign({id:newUser.id}, process.env.JWT_SECRET, {
-            expiresIn: "7d"
-        })
-        
+        const token = jwt.sign(
+            { id: newUser.id },
+            process.env.JWT_SECRET,
+            { expiresIn: "7d" }
+        );
+
         res.cookie("jwt", token, {
-            httpOnly:true,
-            sameSite:"none",
-            secure:process.env.NODE_ENV !== "development",
-            maxAge: 1000 * 60 * 60 * 24 * 7,
-        })
+            httpOnly: true,
+            sameSite: "none",
+            secure: process.env.NODE_ENV !== "development",
+            maxAge: 1000 * 60 * 60 * 24 * 7
+        });
 
         res.status(201).json({
-         success:true,
-         message:"User creatred successfully",
-         user:{
-            id:newUser.id,
-            email:newUser.email,
-            name:newUser.name,
-            role:newUser.role,
-            image:newUser.image
-         }   
-        })
-    } catch (error) {
-        console.error("Error creating user:", error)
-        res.status(500).json({
-            error:"Error Creating User"
-        })
-    }
+            success: true,
+            message: "User created successfully",
+            user: {
+                id: newUser.id,
+                email: newUser.email,
+                name: newUser.name,
+                phone: newUser.phone,
+                role: newUser.role,
+                image: newUser.image
+            }
+        });
 
-}
+    } catch (error) {
+        console.error("Error creating user:", error);
+        res.status(500).json({
+            error: "Error creating user"
+        });
+    }
+};
 
 export const login = async (req, res) => {
     const {email, password} = req.body;
