@@ -36,7 +36,7 @@ export const useAuthStore = create((set) => ({
         4000
       );
     } catch (error) {
-      console.error("Error signing up:", error.response?.data?.error);
+      console.error(error);
 
       const errorMessage =
         error.response?.data?.error || "Sign up failed. Please try again.";
