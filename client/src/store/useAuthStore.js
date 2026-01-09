@@ -32,7 +32,7 @@ export const useAuthStore = create((set) => ({
       set({ authUser: response.data.user });
       toast.success(
         "Account created successfully!",
-        "Welcome to DsaHub!",
+        "Welcome to HOS!",
         4000
       );
     } catch (error) {
