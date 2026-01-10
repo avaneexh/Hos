@@ -22,7 +22,6 @@ const Navbar = () => {
   const handleLogout = async (e) => {
     e.preventDefault();
     await logout();
-    navigate("/login");
   };
 
   useEffect(() => {
