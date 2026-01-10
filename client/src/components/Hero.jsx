@@ -6,14 +6,13 @@ const Hero = () => {
     <section className="relative w-full h-80 overflow-hidden">
       <div className="absolute inset-0 overflow-hidden">
         <img
-          src="https://res.cloudinary.com/duxy05sxc/image/upload/v1768057823/aestc_hero_bg_sfodjo.jpg"
+          src="https://res.cloudinary.com/duxy05sxc/image/upload/v1768058969/aestc_hero_bg_g73rsh.jpg"
           alt="Restaurant food"
           className="
             absolute 
             top-1/2 left-1/2 
             -translate-x-1/2 -translate-y-1/2
-            -rotate-90
-            w-xl 
+            w-auto 
             h-auto 
             object-cover
             scale-110
@@ -25,7 +24,7 @@ const Hero = () => {
         <div className="w-full max-w-6xl mx-auto px-4 pb-6">
           <div className="bg-white rounded-xl shadow-lg p-6">
             <h1 className="text-2xl font-semibold text-gray-900">
-              Vine Yard Chinese & English Takeaway
+              The HOS corner
             </h1>
 
             <p className="text-sm text-gray-600 mt-1">
