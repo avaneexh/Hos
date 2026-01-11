@@ -95,6 +95,7 @@ export const menu = [
         description:
           "Aromatic basmati rice cooked with chicken and spices.",
         price: "£9.95",
+        type:"NON_VEG"
       },
       {
         id: "veg-biryani",
