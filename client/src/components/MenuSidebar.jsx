@@ -1,6 +1,6 @@
 const MenuSidebar = ({ categories, activeCategory, onCategoryClick }) => {
   return (
-    <aside className="w-64 bg-[#f7f1e7] border-r border-[#e5ddd1] h-screen sticky top-0 overflow-y-auto">
+    <aside className="hidden lg:block w-64 bg-[#f7f1e7] border-r border-[#e5ddd1] h-screen sticky top-0 overflow-y-auto">
       <ul className="py-4">
         {categories.map((cat) => {
           const isActive = activeCategory === cat;

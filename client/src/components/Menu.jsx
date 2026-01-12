@@ -1,10 +1,15 @@
 import React, { useEffect, useRef, useState } from "react";
 import MenuSidebar from "./MenuSidebar";
 import { menu } from "./menuData";
+import { Utensils as MenuIcon, X } from "lucide-react";
+
+
 
 const Menu = () => {
   const [activeCategory, setActiveCategory] = useState(menu[0].category);
+  const [openMobileMenu, setOpenMobileMenu] = useState(false);
   const sectionRefs = useRef({});
+  const mobileMenuRef = useRef(null);
 
   const handleCategoryClick = (category) => {
     sectionRefs.current[category]?.scrollIntoView({
@@ -35,6 +40,22 @@ const Menu = () => {
     return () => observer.disconnect();
   }, []);
 
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (
+        openMobileMenu &&
+        mobileMenuRef.current &&
+        !mobileMenuRef.current.contains(e.target)
+      ) {
+        setOpenMobileMenu(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [openMobileMenu]);
+
+
   return (
     <div className="flex">
       <MenuSidebar
@@ -43,7 +64,7 @@ const Menu = () => {
         onCategoryClick={handleCategoryClick}
       />
 
-      <main className="flex-1 bg-[#faf6ef] px-8 py-6 space-y-12">
+      <main className="flex-1 bg-[#faf6ef] px-4 sm:px-6 lg:px-8 py-6 space-y-12">
         {menu.map((section) => (
           <section
             key={section.category}
@@ -79,6 +100,69 @@ const Menu = () => {
           </section>
         ))}
       </main>
+      <button
+        onClick={() => setOpenMobileMenu((prev) => !prev)}
+        className={`lg:hidden fixed bottom-6 right-6 z-50 flex items-center gap-2
+          px-5 py-3 rounded-full shadow-lg
+          active:scale-95 transition-all
+          ${
+            openMobileMenu
+              ? "bg-[#2f2f2f] text-white"
+              : "bg-[#4a2c2a] text-[#f7f1e7]"
+          }
+        `}
+      >
+        {openMobileMenu ? (
+          <>
+            <X size={18} strokeWidth={2} />
+            <span className="text-sm font-medium">Close</span>
+          </>
+        ) : (
+          <>
+            <MenuIcon size={18} strokeWidth={2} />
+            <span className="text-sm font-medium">Menu</span>
+          </>
+        )}
+      </button>
+
+
+
+      {openMobileMenu && (
+        <div className="lg:hidden fixed inset-0 z-50 bg-black/40 flex items-end justify-center">
+          
+          <div
+            ref={mobileMenuRef}
+            className="mb-20 w-[90%] max-w-sm bg-white rounded-2xl shadow-2xl"
+          >
+            <ul className="py-3">
+              {menu.map((m) => (
+                <li
+                  key={m.category}
+                  onClick={() => {
+                    handleCategoryClick(m.category);
+                    setOpenMobileMenu(false);
+                  }}
+                  className={`flex justify-between items-center px-5 py-3 text-sm font-medium cursor-pointer
+                    ${
+                      activeCategory === m.category
+                        ? "text-[#b23a2f]"
+                        : "text-gray-700"
+                    }
+                  `}
+                >
+                  <span>{m.category}</span>
+
+                  <span className="text-gray-400 text-xs">
+                    {m.items?.length ?? ""}
+                  </span>
+                </li>
+              ))}
+            </ul>
+
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
