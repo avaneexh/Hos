@@ -133,7 +133,7 @@ return (
         <div
           ref={mobileMenuRef}
           className="
-            absolute right-4 mt-3 w-60
+            fixed right-4 mt-3 w-60
             rounded-2xl bg-[#F7F1E8]
             border border-[#E6DCCF]
             shadow-xl z-50
