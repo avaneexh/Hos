@@ -16,7 +16,7 @@ function App() {
   }, [checkAuth]);
   if (isCheckingAuth ) {
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div className="flex items-center justify-center h-screen bg-[#faf6ef]">
         <Loader className="size-10 animate-spin" />
       </div>
     );

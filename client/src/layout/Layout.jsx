@@ -1,14 +1,14 @@
 import React from "react";
 import { Outlet } from "react-router-dom";
 import Navbar from "../components/Navbar";
-// import Footer from "../components/Footer";
+import Footer from "../components/Footer";
 
 const Layout = () => {
   return (
-    <div>
+    <div className=" bg-[#faf6ef]">
       <Navbar/>
       <Outlet />
-      {/* <Footer/> */}
+      <Footer/>
     </div>
   );
 };
