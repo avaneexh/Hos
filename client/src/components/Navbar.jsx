@@ -76,7 +76,15 @@ return (
                   </button>
 
                   {openAdmin && (
-                    <div className="absolute right-0 mt-2 w-44 rounded-xl bg-white shadow-lg border">
+                    <div  className="
+                      absolute  right-4 mt-3 w-60
+                      rounded-2xl bg-[#F7F1E8]
+                      border border-[#E6DCCF]
+                      shadow-xl z-50
+                      overflow-hidden
+                      transition-all duration-200 ease-out
+                      animate-[fadeIn_0.2s_ease-out]
+                    ">
                       <Link to="/admin/add-items" className="block px-4 py-2 text-sm hover:bg-gray-100">
                         Add Items
                       </Link>

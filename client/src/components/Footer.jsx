@@ -45,16 +45,6 @@ const Footer = () => {
         </div>
       </div>
 
-      <button
-        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-        className="fixed bottom-6 right-6 z-40
-                   bg-[#2F2F2F] text-white
-                   p-3 rounded-full shadow-lg
-                   hover:bg-[#1f1f1f]
-                   transition-all"
-      >
-        <ArrowUp size={18} />
-      </button>
     </footer>
   );
 };
