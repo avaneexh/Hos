@@ -6,10 +6,12 @@ import MenuPage from "./pages/MenuPage";
 import { Loader } from "lucide-react";
 
 import { useAuthStore } from './store/useAuthStore';
+import AdminRoute from "./components/AdminRoute";
+import AddItem from "./pages/AddItem";
 
 
 function App() {
-  const {  checkAuth, isCheckingAuth } = useAuthStore();
+  const {authUser, checkAuth, isCheckingAuth } = useAuthStore();
  
   useEffect(() => {
     checkAuth();
@@ -28,6 +30,13 @@ function App() {
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<MenuPage />} />
+        </Route>
+
+        <Route element={<AdminRoute/>}>
+          <Route
+            path="/addItem"
+            element={authUser ? <AddItem /> : <Navigate to="/" />}
+          />
         </Route>
       </Routes>
     </div>

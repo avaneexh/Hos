@@ -85,7 +85,7 @@ return (
                       transition-all duration-200 ease-out
                       animate-[fadeIn_0.2s_ease-out]
                     ">
-                      <Link to="/admin/add-items" className="block px-4 py-2 text-sm hover:bg-gray-100">
+                      <Link to="/addItem" className="block px-4 py-2 text-sm hover:bg-gray-100">
                         Add Items
                       </Link>
                       <Link to="/admin/users" className="block px-4 py-2 text-sm hover:bg-gray-100">
@@ -157,7 +157,7 @@ return (
               </div>
 
               <Link
-                to="/admin/add-items"
+                to="/addItem"
                 className="block px-5 py-3 text-sm font-medium text-[#3E3A36]
                           hover:bg-[#EFE4D6]"
               >
