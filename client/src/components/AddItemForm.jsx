@@ -151,7 +151,7 @@ const AddItem = ({ menuItems = [] }) => {
                 htmlFor="image-upload"
                 className="
                   flex flex-col items-center justify-center
-                  h-40 w-full cursor-pointer
+                  h-40 w-40 cursor-pointer
                   rounded-xl border-2 border-dashed border-[#E5D9C8]
                   bg-[#EFE8DD]
                   text-[#8C857D]
