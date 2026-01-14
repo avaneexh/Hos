@@ -1,6 +1,8 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuthStore } from "../store/useAuthStore";
 import { Loader } from "lucide-react";
+import Navbar from "./Navbar";
+import Footer from "./Footer";
 
 const AdminRoute = () => {
     const {authUser , isCheckingAuth} = useAuthStore()
@@ -13,7 +15,13 @@ const AdminRoute = () => {
         return <Navigate to="/"/>;
     }
 
-  return <Outlet/>
+  return (
+    <div className=" bg-[#faf6ef]">
+      <Navbar/>
+      <Outlet />
+      <Footer/>
+    </div>
+  );
 }
 
 export default AdminRoute
