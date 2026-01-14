@@ -2,6 +2,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { addItemSchema } from "./AddItemSchema";
+import { ImagePlus } from "lucide-react";
+
 
 const AddItem = ({ menuItems = [] }) => {
   const categories = useMemo(
@@ -131,10 +133,66 @@ const AddItem = ({ menuItems = [] }) => {
             className={`${inputClass} resize-none`}
           />
 
-          <input type="file" accept="image/*" {...register("image")} />
-          {imagePreview && (
-            <img src={imagePreview} alt="preview" className="h-40 rounded-xl object-cover" />
-          )}
+          <div>
+            <label className="block text-sm font-medium text-[#3E3A36] mb-2">
+              Dish Image
+            </label>
+
+            <input
+              type="file"
+              accept="image/*"
+              {...register("image")}
+              id="image-upload"
+              className="hidden"
+            />
+
+            {!imagePreview ? (
+              <label
+                htmlFor="image-upload"
+                className="
+                  flex flex-col items-center justify-center
+                  h-40 w-full cursor-pointer
+                  rounded-xl border-2 border-dashed border-[#E5D9C8]
+                  bg-[#EFE8DD]
+                  text-[#8C857D]
+                  hover:bg-[#E6DCCF]
+                  transition
+                "
+              >
+                <ImagePlus size={32} className="mb-2" />
+                <span className="text-sm font-medium">Add Image</span>
+                <span className="text-xs mt-1">PNG, JPG up to 5MB</span>
+              </label>
+            ) : (
+              <div className="relative">
+                <img
+                  src={imagePreview}
+                  alt="preview"
+                  className="h-40 w-40 object-cover rounded-xl"
+                />
+
+                <label
+                  htmlFor="image-upload"
+                  className="
+                    absolute bottom-2 left-2
+                    bg-black/70 text-white text-xs
+                    px-3 py-1 rounded-lg
+                    cursor-pointer
+                    hover:bg-black
+                  "
+                >
+                  Change
+                </label>
+              </div>
+            )}
+
+            {errors.image && (
+              <p className="text-xs text-red-500 mt-1">
+                {errors.image.message}
+              </p>
+            )}
+          </div>
+
 
           <div className="flex gap-6 text-sm text-[#3E3A36]">
             <label><input type="checkbox" {...register("isVeg")} /> Veg</label>
