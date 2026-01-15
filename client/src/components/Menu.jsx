@@ -83,11 +83,13 @@ const Menu = () => {
                 >
                   <div className="flex gap-4">
 
-                    <div className="w-20 h-20 shrink-0 rounded-lg overflow-hidden bg-[#f1e6d8]">
-                      <img
-                        src={item.image}
-                        className="w-full h-full object-cover"
-                      />
+                    <div className="w-20 h-20 shrink-0 rounded-lg bg-transparent overflow-hidden">
+                      {item.image ? (
+                        <img
+                          src={item.image}
+                          className="w-full h-full object-cover block"
+                        />
+                      ) : null}
                     </div>
 
                     <div className="flex-1">
