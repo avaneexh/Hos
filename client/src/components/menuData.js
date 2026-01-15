@@ -15,6 +15,7 @@ export const menu = [
         description:
           "Onion salad, mango chutney, mint sauce and mixed pickle.",
         price: "£2.00",
+        isVeg: "true"
       },
       {
         id: "green-salad",
@@ -22,6 +23,7 @@ export const menu = [
         description:
           "Onions, cucumbers, tomatoes, chillies and lettuce.",
         price: "£2.95",
+        isVeg: "true"
       },
     ],
   },
@@ -103,6 +105,7 @@ export const menu = [
         description:
           "Basmati rice cooked with mixed vegetables and herbs.",
         price: "£8.45",
+        isVeg: "true"
       },
     ],
   },
@@ -115,18 +118,21 @@ export const menu = [
         name: "Plain Naan",
         description: "Soft traditional Indian bread.",
         price: "£2.50",
+        isVeg: "true"
       },
       {
         id: "garlic-naan",
         name: "Garlic Naan",
         description: "Naan topped with fresh garlic and coriander.",
         price: "£2.95",
+        isVeg: "true"
       },
       {
         id: "chips",
         name: "Chips",
         description: "Classic golden fried potato chips.",
         price: "£2.95",
+        isVeg: "true"
       },
     ],
   },
@@ -140,6 +146,7 @@ export const menu = [
         description:
           "Milk-solid dumplings soaked in sugar syrup.",
         price: "£3.50",
+        isVeg: "true"
       },
       {
         id: "kulfi",
@@ -147,6 +154,7 @@ export const menu = [
         description:
           "Traditional Indian ice cream flavoured with pistachio.",
         price: "£3.95",
+        isVeg: "true"
       },
     ],
   },
@@ -160,6 +168,7 @@ export const menu = [
         description:
           "Refreshing yoghurt drink blended with mango pulp.",
         price: "£2.95",
+        isVeg: "true"
       },
       {
         id: "soft-drink",
@@ -167,6 +176,7 @@ export const menu = [
         description:
           "Coke, Diet Coke, Sprite or Fanta.",
         price: "£1.95",
+        isVeg: "true"
       },
     ],
   },

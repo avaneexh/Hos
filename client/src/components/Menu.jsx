@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import MenuSidebar from "./MenuSidebar";
 import { menu } from "./menuData";
-import { Utensils as MenuIcon, X } from "lucide-react";
+import { Drumstick, Leaf, Utensils as MenuIcon, X } from "lucide-react";
 
 
 
@@ -81,20 +81,54 @@ const Menu = () => {
                   key={item.id}
                   className="border-b border-[#e5ddd1] pb-4"
                 >
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="font-medium">{item.name}</h3>
+                  <div className="flex gap-4">
+
+                    <div className="w-20 h-20 shrink-0 rounded-lg overflow-hidden bg-[#f1e6d8]">
+                      <img
+                        src={item.image}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+
+                    <div className="flex-1">
+                      <h3 className="font-medium text-[#3E3A36]">
+                        {item.name}
+                      </h3>
+
                       {item.description && (
-                        <p className="text-sm text-gray-600 mt-1">
+                        <p className="text-sm text-gray-600 mt-1 line-clamp-2">
                           {item.description}
                         </p>
                       )}
+
+                      <div className="mt-2 font-medium text-[#b23a2f]">
+                        {item.price}
+                      </div>
                     </div>
-                    <span className="font-medium text-[#b23a2f]">
-                      {item.price}
-                    </span>
+
+                    <div className="flex flex-col items-end justify-between">
+
+                      <div className="flex items-center justify-end">
+                        {item.isVeg ? (
+                          <Leaf size={18} className="text-green-600" />
+                        ) : (
+                          <Drumstick size={18} className="text-red-600" />
+                        )}
+                      </div>
+
+
+                      <button
+                        className="mt-2 px-4 py-1.5 text-sm font-semibold
+                                  border border-[#b23a2f] text-[#b23a2f]
+                                  rounded-lg hover:bg-[#b23a2f]/10
+                                  transition"
+                      >
+                        ADD +
+                      </button>
+                    </div>
                   </div>
                 </div>
+
               ))}
             </div>
           </section>
