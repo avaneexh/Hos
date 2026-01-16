@@ -61,7 +61,7 @@ model Dish {
   name        String
   description String?
   image       String?
-  basePrice   Int?        
+  basePrice   Float?        
 
   isAvailable Boolean @default(true) 
   inMenu      Boolean @default(true) 
@@ -84,7 +84,7 @@ model Dish {
 model DishSize {
   id        String @id @default(uuid())
   name      String 
-  price     Int    
+  price     Float    
   dishId    String
   dish      Dish   @relation(fields: [dishId], references: [id])
 
@@ -95,7 +95,7 @@ model DishSize {
 model Addon {
   id        String @id @default(uuid())
   name      String @unique
-  price     Int
+  price     Float
 
   dishes    DishAddon[]
 

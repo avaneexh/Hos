@@ -3,13 +3,17 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { addItemSchema } from "./AddItemSchema";
 import { ImagePlus } from "lucide-react";
+import { useAdminStore } from "../store/useAdminStore";
+
 
 
 const AddItem = ({ menuItems = [] }) => {
-  const categories = useMemo(
-    () => [...new Set(menuItems.map((i) => i.category))],
-    [menuItems]
-  );
+  const { addDish, isLoading, getAllCategories, categories } = useAdminStore();
+
+  useEffect(() => {
+    getAllCategories();
+  }, [getAllCategories]);
+
 
   const [imagePreview, setImagePreview] = useState(null);
 
@@ -57,29 +61,45 @@ const AddItem = ({ menuItems = [] }) => {
       setImagePreview(URL.createObjectURL(imageFile[0]));
     }
   }, [imageFile]);
-
-  const onSubmit = (data) => {
+  const onSubmit = async (data) => {
     const finalCategory =
       data.category === "NEW" ? data.newCategory : data.category;
 
-    const payload = {
-      name: data.name,
-      description: data.description,
-      basePrice: data.price,
-      foodType: data.isVeg ? "VEG" : "NON_VEG",
-      category: finalCategory,
-      image: data.image[0],
+    const formData = new FormData();
 
-      sizes: data.sizes ?? [],
-      addons: data.addons ?? [],
-      allergens: data.allergens ?? [],
-    };
+    formData.append("name", data.name);
+    formData.append("description", data.description || "");
+    formData.append("basePrice", data.price);
+    formData.append("foodType", data.isVeg ? "VEG" : "NON_VEG");
+    formData.append("category", finalCategory);
 
-    console.log("FINAL PAYLOAD:", payload);
+    if (data.image?.[0]) {
+      formData.append("image", data.image[0]);
+    }
 
-    reset();
-    setImagePreview(null);
+    data.sizes?.forEach((s, index) => {
+      formData.append(`sizes[${index}][name]`, s.name);
+      formData.append(`sizes[${index}][price]`, s.price);
+    });
+
+    data.addons?.forEach((a, index) => {
+      formData.append(`addons[${index}][name]`, a.name);
+      formData.append(`addons[${index}][price]`, a.price);
+    });
+
+    data.allergens?.forEach((a, index) => {
+      formData.append(`allergens[${index}]`, a.name);
+    });
+
+    try {
+      await addDish(formData);
+      reset();
+      setImagePreview(null);
+    } catch (error) {
+      console.error("Add dish failed");
+    }
   };
+
 
   const inputClass =
     "w-full rounded-xl bg-[#EFE8DD] px-4 py-3 text-sm text-[#3E3A36] placeholder:text-[#8C857D] border border-[#E5D9C8] focus:outline-none focus:ring-2 focus:ring-[#9C3F1F]/30";
@@ -101,9 +121,13 @@ const AddItem = ({ menuItems = [] }) => {
           <div className="relative">
             <select {...register("category")} className={`${inputClass} appearance-none`}>
               <option value="">Select category</option>
+
               {categories.map((cat) => (
-                <option key={cat} value={cat}>{cat}</option>
+                <option key={cat.id} value={cat.name}>
+                  {cat.name}
+                </option>
               ))}
+
               <option value="NEW">+ Add new category</option>
             </select>
             <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[#8C857D]">
@@ -121,6 +145,8 @@ const AddItem = ({ menuItems = [] }) => {
 
           <input
             type="number"
+            step="0.01"
+            min="0"
             {...register("price", { valueAsNumber: true })}
             placeholder="Price (£)"
             className={inputClass}
@@ -211,6 +237,8 @@ const AddItem = ({ menuItems = [] }) => {
                 />
                 <input
                   type="number"
+                  step="0.01"
+                  min="0"
                   {...register(`sizes.${index}.price`, { valueAsNumber: true })}
                   placeholder="Price"
                   className={inputClass}
@@ -240,6 +268,8 @@ const AddItem = ({ menuItems = [] }) => {
                 />
                 <input
                   type="number"
+                  step="0.01"
+                  min="0"
                   {...register(`addons.${index}.price`, { valueAsNumber: true })}
                   placeholder="Price"
                   className={inputClass}
@@ -282,9 +312,10 @@ const AddItem = ({ menuItems = [] }) => {
 
           <button
             type="submit"
-            className="w-full rounded-xl bg-[#9C3F1F] py-3 text-white font-semibold hover:bg-[#8A3518]"
+            disabled={isLoading}
+            className="w-full rounded-xl bg-[#9C3F1F] py-3 text-white font-semibold hover:bg-[#8A3518] disabled:opacity-60"
           >
-            Add Item
+            {isLoading ? "Adding..." : "Add Item"}
           </button>
         </form>
       </div>
