@@ -8,14 +8,15 @@ export const addDish = async (req, res) => {
     const {
       name,
       description,
-      image,
       basePrice,
       foodType,
       category,
       sizes = [],
       addons = [],
-      allergens = [],
+      allergens = [], 
     } = req.body;
+
+    const image = req.file?.path || null;
 
     if (!name || !category || !foodType || !basePrice) {
       return res.status(400).json({
@@ -25,7 +26,7 @@ export const addDish = async (req, res) => {
     }
 
     const dishCategory = await prisma.category.upsert({
-      where: { name: category },
+      where: { name: category }, 
       update: {},
       create: { name: category },
     });
@@ -35,15 +36,17 @@ export const addDish = async (req, res) => {
         name,
         description,
         image,
-        basePrice,
+        basePrice: Number(basePrice),
         foodType,
         categoryId: dishCategory.id,
+
+        allergens: Array.isArray(allergens) ? allergens : [],
 
         sizes: sizes.length
           ? {
               create: sizes.map((s) => ({
                 name: s.name,
-                price: s.price,
+                price: Number(s.price),
               })),
             }
           : undefined,
@@ -52,22 +55,12 @@ export const addDish = async (req, res) => {
           ? {
               create: addons.map((a) => ({
                 addon: {
-                  create: {
-                    name: a.name,
-                    price: a.price,
-                  },
-                },
-              })),
-            }
-          : undefined,
-
-        allergens: allergens.length
-          ? {
-              create: allergens.map((a) => ({
-                allergen: {
                   connectOrCreate: {
                     where: { name: a.name },
-                    create: { name: a.name },
+                    create: {
+                      name: a.name,
+                      price: Number(a.price),
+                    },
                   },
                 },
               })),
@@ -79,9 +72,6 @@ export const addDish = async (req, res) => {
         sizes: true,
         addons: {
           include: { addon: true },
-        },
-        allergens: {
-          include: { allergen: true },
         },
       },
     });
@@ -97,6 +87,7 @@ export const addDish = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Failed to add dish",
+      error: error.message,
     });
   }
 };
