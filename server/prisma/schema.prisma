@@ -20,10 +20,7 @@ enum UserRole {
   RESTURANT
 }
 
-enum DishStatus {
-  AVAILABLE
-  UNAVAILABLE
-}
+
 
 enum FoodType {
   VEG
@@ -65,7 +62,10 @@ model Dish {
   description String?
   image       String?
   basePrice   Int?        
-  status      DishStatus  @default(AVAILABLE)
+
+  isAvailable Boolean @default(true) 
+  inMenu      Boolean @default(true) 
+  isDeleted   Boolean @default(false)
 
   foodType    FoodType
 
