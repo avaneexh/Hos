@@ -110,7 +110,7 @@ const Menu = () => {
                   className="border-b border-[#e5ddd1] pb-4"
                 >
                   <div className="flex gap-4">
-                    <div className="w-20 h-20 shrink-0 overflow-hidden">
+                    <div className="w-20 h-20 shrink-0 rounded-md overflow-hidden">
                       {item.image && (
                         <img
                           src={item.image}
