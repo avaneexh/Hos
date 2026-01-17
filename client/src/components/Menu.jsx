@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import MenuSidebar from "./MenuSidebar";
-import { Drumstick, Leaf, Utensils as MenuIcon, X } from "lucide-react";
+import { Drumstick, Leaf, Loader, Utensils as MenuIcon, X } from "lucide-react";
 import { useMenuStore } from "../store/useMenuStore";
 
 const Menu = () => {
@@ -70,8 +70,8 @@ const Menu = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#faf6ef]">
-        <p className="text-sm text-gray-500">Loading menu...</p>
+      <div className="flex items-center justify-center h-screen bg-[#faf6ef]">
+        <Loader className="size-10 animate-spin" />
       </div>
     );
   }
