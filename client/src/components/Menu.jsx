@@ -1,15 +1,26 @@
 import React, { useEffect, useRef, useState } from "react";
 import MenuSidebar from "./MenuSidebar";
-import { menu } from "./menuData";
 import { Drumstick, Leaf, Utensils as MenuIcon, X } from "lucide-react";
-
-
+import { useMenuStore } from "../store/useMenuStore";
 
 const Menu = () => {
-  const [activeCategory, setActiveCategory] = useState(menu[0].category);
+  const { menu, getMenu, isLoading } = useMenuStore();
+
+  const [activeCategory, setActiveCategory] = useState(null);
   const [openMobileMenu, setOpenMobileMenu] = useState(false);
+
   const sectionRefs = useRef({});
   const mobileMenuRef = useRef(null);
+
+  useEffect(() => {
+    getMenu();
+  }, [getMenu]);
+
+  useEffect(() => {
+    if (menu.length > 0 && !activeCategory) {
+      setActiveCategory(menu[0].category);
+    }
+  }, [menu, activeCategory]);
 
   const handleCategoryClick = (category) => {
     sectionRefs.current[category]?.scrollIntoView({
@@ -19,6 +30,8 @@ const Menu = () => {
   };
 
   useEffect(() => {
+    if (!menu.length) return;
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -38,7 +51,7 @@ const Menu = () => {
     });
 
     return () => observer.disconnect();
-  }, []);
+  }, [menu]);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -55,6 +68,21 @@ const Menu = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [openMobileMenu]);
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#faf6ef]">
+        <p className="text-sm text-gray-500">Loading menu...</p>
+      </div>
+    );
+  }
+
+  if (!menu.length) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#faf6ef]">
+        <p className="text-sm text-gray-500">No menu available</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex">
@@ -82,14 +110,14 @@ const Menu = () => {
                   className="border-b border-[#e5ddd1] pb-4"
                 >
                   <div className="flex gap-4">
-
-                    <div className="w-20 h-20 shrink-0 rounded-lg bg-transparent overflow-hidden">
-                      {item.image ? (
+                    <div className="w-20 h-20 shrink-0 overflow-hidden">
+                      {item.image && (
                         <img
                           src={item.image}
+                          alt={item.name}
                           className="w-full h-full object-cover block"
                         />
-                      ) : null}
+                      )}
                     </div>
 
                     <div className="flex-1">
@@ -104,13 +132,12 @@ const Menu = () => {
                       )}
 
                       <div className="mt-2 font-medium text-[#b23a2f]">
-                        {item.price}
+                        £{item.price}
                       </div>
                     </div>
 
                     <div className="flex flex-col items-end justify-between">
-
-                      <div className="flex items-center justify-end">
+                      <div>
                         {item.isVeg ? (
                           <Leaf size={18} className="text-green-600" />
                         ) : (
@@ -118,54 +145,38 @@ const Menu = () => {
                         )}
                       </div>
 
-
                       <button
                         className="mt-2 px-4 py-1.5 text-sm font-semibold
-                                  border border-[#b23a2f] text-[#b23a2f]
-                                  rounded-lg hover:bg-[#b23a2f]/10
-                                  transition"
+                                   border border-[#b23a2f] text-[#b23a2f]
+                                   rounded-lg hover:bg-[#b23a2f]/10
+                                   transition"
                       >
                         ADD +
                       </button>
                     </div>
                   </div>
                 </div>
-
               ))}
             </div>
           </section>
         ))}
       </main>
+
       <button
         onClick={() => setOpenMobileMenu((prev) => !prev)}
         className={`lg:hidden fixed bottom-6 right-6 z-50 flex items-center gap-2
-          px-5 py-3 rounded-full shadow-lg
-          active:scale-95 transition-all
-          ${
-            openMobileMenu
-              ? "bg-[#2f2f2f] text-white"
-              : "bg-[#4a2c2a] text-[#f7f1e7]"
-          }
+          px-5 py-3 rounded-full shadow-lg transition-all
+          ${openMobileMenu ? "bg-[#2f2f2f] text-white" : "bg-[#4a2c2a] text-[#f7f1e7]"}
         `}
       >
-        {openMobileMenu ? (
-          <>
-            <X size={18} strokeWidth={2} />
-            <span className="text-sm font-medium">Close</span>
-          </>
-        ) : (
-          <>
-            <MenuIcon size={18} strokeWidth={2} />
-            <span className="text-sm font-medium">Menu</span>
-          </>
-        )}
+        {openMobileMenu ? <X size={18} /> : <MenuIcon size={18} />}
+        <span className="text-sm font-medium">
+          {openMobileMenu ? "Close" : "Menu"}
+        </span>
       </button>
-
-
 
       {openMobileMenu && (
         <div className="lg:hidden fixed inset-0 z-50 bg-black/40 flex items-end justify-center">
-          
           <div
             ref={mobileMenuRef}
             className="mb-20 w-[90%] max-w-sm bg-white rounded-2xl shadow-2xl"
@@ -178,7 +189,7 @@ const Menu = () => {
                     handleCategoryClick(m.category);
                     setOpenMobileMenu(false);
                   }}
-                  className={`flex justify-between items-center px-5 py-3 text-sm font-medium cursor-pointer
+                  className={`flex justify-between px-5 py-3 text-sm font-medium cursor-pointer
                     ${
                       activeCategory === m.category
                         ? "text-[#b23a2f]"
@@ -187,18 +198,15 @@ const Menu = () => {
                   `}
                 >
                   <span>{m.category}</span>
-
                   <span className="text-gray-400 text-xs">
-                    {m.items?.length ?? ""}
+                    {m.items.length}
                   </span>
                 </li>
               ))}
             </ul>
-
           </div>
         </div>
       )}
-
     </div>
   );
 };

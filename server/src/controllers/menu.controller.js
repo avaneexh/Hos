@@ -8,7 +8,6 @@ export const getMenu = async (req, res) => {
       include: {
         dishes: {
           where: {
-            status: "AVAILABLE",
             inMenu: true,
             isDeleted: false,
           },
