@@ -2,12 +2,14 @@ import React, { useEffect, useRef, useState } from "react";
 import MenuSidebar from "./MenuSidebar";
 import { Drumstick, Leaf, Loader, Utensils as MenuIcon, X } from "lucide-react";
 import { useMenuStore } from "../store/useMenuStore";
+import DishCustomizer from "./DishCustomizer";
 
 const Menu = () => {
   const { menu, getMenu, isLoading } = useMenuStore();
 
   const [activeCategory, setActiveCategory] = useState(null);
   const [openMobileMenu, setOpenMobileMenu] = useState(false);
+  const [openDish, setOpenDish] = useState(null);
 
   const sectionRefs = useRef({});
   const mobileMenuRef = useRef(null);
@@ -70,7 +72,7 @@ const Menu = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-[#faf6ef]">
+      <div className="flex mt-4 justify-center h-screen bg-[#faf6ef]">
         <Loader className="size-10 animate-spin" />
       </div>
     );
@@ -83,7 +85,8 @@ const Menu = () => {
       </div>
     );
   }
-
+  // console.log("menu items", menu);
+  
   return (
     <div className="flex">
       <MenuSidebar
@@ -146,6 +149,7 @@ const Menu = () => {
                       </div>
 
                       <button
+                        onClick={() => setOpenDish(item)}
                         className="mt-2 px-4 py-1.5 text-sm font-semibold
                                    border border-[#b23a2f] text-[#b23a2f]
                                    rounded-lg hover:bg-[#b23a2f]/10
@@ -207,6 +211,15 @@ const Menu = () => {
           </div>
         </div>
       )}
+      <DishCustomizer
+        dish={openDish}
+        open={!!openDish}
+        onClose={() => setOpenDish(null)}
+        onAdd={(cartItem) => {
+          addToCart(cartItem);
+          setOpenDish(null);
+        }}
+      />
     </div>
   );
 };

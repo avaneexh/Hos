@@ -12,13 +12,25 @@ export const getMenu = async (req, res) => {
             isDeleted: false,
           },
           orderBy: { createdAt: "asc" },
-          select: {
-            id: true,
-            name: true,
-            description: true,
-            image: true,
-            basePrice: true,
-            foodType: true,
+          include: {
+            sizes: {
+              select: {
+                id: true,
+                name: true,
+                price: true,
+              },
+            },
+            addons: {
+              include: {
+                addon: {
+                  select: {
+                    id: true,
+                    name: true,
+                    price: true,
+                  },
+                },
+              },
+            },
           },
         },
       },
@@ -35,13 +47,14 @@ export const getMenu = async (req, res) => {
           image: dish.image,
           price: dish.basePrice,
           isVeg: dish.foodType === "VEG",
+
+          sizes: dish.sizes,
+          addons: dish.addons.map((a) => a.addon),
+          allergens: dish.allergens,
         })),
       }));
 
-    res.json({
-      success: true,
-      menu,
-    });
+    res.json({ success: true, menu });
   } catch (error) {
     console.error("Get Menu Error:", error);
     res.status(500).json({
