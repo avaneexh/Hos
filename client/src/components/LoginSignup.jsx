@@ -2,7 +2,6 @@ import React, { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import axios from "axios";
 import { Eye, EyeOff } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
 
