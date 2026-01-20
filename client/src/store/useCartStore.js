@@ -8,7 +8,6 @@ export const useCartStore = create(
 
       addToCart: (item) => {
         const items = get().items;
-
         const existing = items.find(
           (i) =>
             i.dishId === item.dishId &&
