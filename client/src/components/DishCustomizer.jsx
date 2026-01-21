@@ -8,8 +8,11 @@ import {
   Leaf,
   Drumstick,
 } from "lucide-react";
+import { useCartStore } from "../store/useCartStore";
+
 
 const DishCustomizer = ({ dish, open, onClose, onAdd }) => {
+  const addToCart = useCartStore((state) => state.addToCart);
   const [selectedSize, setSelectedSize] = useState(null);
   const [selectedAddons, setSelectedAddons] = useState([]);
   const [quantity, setQuantity] = useState(1);
@@ -273,8 +276,8 @@ const DishCustomizer = ({ dish, open, onClose, onAdd }) => {
           </div>
 
           <button
-            onClick={() =>
-              onAdd({
+            onClick={() => {
+              addToCart({
                 dishId: dish.id,
                 name: dish.name,
                 image: dish.image,
@@ -284,12 +287,15 @@ const DishCustomizer = ({ dish, open, onClose, onAdd }) => {
                 quantity,
                 note,
                 totalPrice,
-              })
-            }
+              });
+
+              onClose(); 
+            }}
             className="px-6 py-3 rounded-xl bg-[#b23a2f] text-white font-semibold"
           >
-            Add £{(totalPrice ?? 0).toFixed(2)}
+            Add £{totalPrice.toFixed(2)}
           </button>
+
         </div>
       </div>
     </div>

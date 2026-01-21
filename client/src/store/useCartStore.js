@@ -8,6 +8,7 @@ export const useCartStore = create(
 
       addToCart: (item) => {
         const items = get().items;
+
         const existing = items.find(
           (i) =>
             i.dishId === item.dishId &&
@@ -21,7 +22,7 @@ export const useCartStore = create(
               i.id === existing.id
                 ? {
                     ...i,
-                    quantity: i.quantity + 1,
+                    quantity: i.quantity + item.quantity,
                     totalPrice: i.totalPrice + item.totalPrice,
                   }
                 : i
@@ -53,8 +54,7 @@ export const useCartStore = create(
               ? {
                   ...item,
                   quantity,
-                  totalPrice:
-                    (item.totalPrice / item.quantity) * quantity,
+                  totalPrice: item.unitPrice * quantity,
                 }
               : item
           ),
@@ -71,6 +71,16 @@ export const useCartStore = create(
     }),
     {
       name: "cart-storage",
+      onRehydrateStorage: () => (state) => {
+        console.log("♻️ Cart rehydrated:", state.items);
+      },
     }
   )
+);
+
+useCartStore.subscribe(
+  (state) => state.items,
+  (items) => {
+    console.log("🛒 Cart updated:", items);
+  }
 );
