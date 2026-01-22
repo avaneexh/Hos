@@ -78,9 +78,9 @@ export const useCartStore = create(
   )
 );
 
-useCartStore.subscribe(
-  (state) => state.items,
-  (items) => {
-    console.log("🛒 Cart updated:", items);
-  }
-);
+// useCartStore.subscribe(
+//   (state) => state.items,
+//   (items) => {
+//     console.log("🛒 Cart updated:", items);
+//   }
+// );
