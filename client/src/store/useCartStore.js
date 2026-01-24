@@ -72,7 +72,7 @@ export const useCartStore = create(
     {
       name: "cart-storage",
       onRehydrateStorage: () => (state) => {
-        console.log("♻️ Cart rehydrated:", state.items);
+        console.log(" Cart rehydrated:", state.items);
       },
     }
   )
@@ -81,6 +81,6 @@ export const useCartStore = create(
 useCartStore.subscribe(
   (state) => state.items,
   (items) => {
-    console.log("🛒 Cart updated:", items);
+    console.log(" Cart updated:", items);
   }
 );

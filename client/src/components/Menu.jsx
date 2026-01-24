@@ -1,12 +1,25 @@
 import React, { useEffect, useRef, useState } from "react";
 import MenuSidebar from "./MenuSidebar";
-import { Drumstick, Leaf, Loader, Utensils as MenuIcon, X } from "lucide-react";
+import {
+  Drumstick,
+  Leaf,
+  Loader,
+  Utensils as MenuIcon,
+  X,
+  Trash2,
+} from "lucide-react";
 import { useMenuStore } from "../store/useMenuStore";
 import DishCustomizer from "./DishCustomizer";
+import { useCartStore } from "../store/useCartStore";
 
 const Menu = () => {
   const { menu, getMenu, isLoading } = useMenuStore();
 
+  const items = useCartStore((s) => s.items);
+  const addToCart = useCartStore((s) => s.addToCart);
+  const updateQuantity = useCartStore((s) => s.updateQuantity);
+  console.log("items", items);
+  
   const [activeCategory, setActiveCategory] = useState(null);
   const [openMobileMenu, setOpenMobileMenu] = useState(false);
   const [openDish, setOpenDish] = useState(null);
@@ -67,8 +80,18 @@ const Menu = () => {
     };
 
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    return () =>
+      document.removeEventListener("mousedown", handleClickOutside);
   }, [openMobileMenu]);
+
+  const getSimpleCartItem = (dishId) => {
+    return items.find(
+      (i) =>
+        i.dishId === dishId &&
+        !i.size &&
+        (!i.addons || i.addons.length === 0)
+    );
+  };
 
   if (isLoading) {
     return (
@@ -85,8 +108,7 @@ const Menu = () => {
       </div>
     );
   }
-  // console.log("menu items", menu);
-  
+
   return (
     <div className="flex">
       <MenuSidebar
@@ -107,60 +129,144 @@ const Menu = () => {
             </h2>
 
             <div className="space-y-4">
-              {section.items.map((item) => (
-                <div
-                  key={item.id}
-                  className="border-b border-[#e5ddd1] pb-4"
-                >
-                  <div className="flex gap-4">
-                    <div className="w-20 h-20 shrink-0 rounded-md overflow-hidden">
-                      {item.image && (
-                        <img
-                          src={item.image}
-                          alt={item.name}
-                          className="w-full h-full object-cover block"
-                        />
-                      )}
-                    </div>
+              {section.items.map((item) => {
+                const cartItem = getSimpleCartItem(item.id);
+                const isCustomizable =
+                  item.sizes?.length || item.addons?.length;
 
-                    <div className="flex-1">
-                      <h3 className="font-medium text-[#3E3A36]">
-                        {item.name}
-                      </h3>
-
-                      {item.description && (
-                        <p className="text-sm text-gray-600 mt-1 line-clamp-2">
-                          {item.description}
-                        </p>
-                      )}
-
-                      <div className="mt-2 font-medium text-[#b23a2f]">
-                        £{item.price}
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col items-end justify-between">
-                      <div>
-                        {item.isVeg ? (
-                          <Leaf size={18} className="text-green-600" />
-                        ) : (
-                          <Drumstick size={18} className="text-red-600" />
+                return (
+                  <div
+                    key={item.id}
+                    className="border-b border-[#e5ddd1] pb-4"
+                  >
+                    <div className="flex gap-4">
+                      <div className="w-20 h-20 shrink-0 rounded-md overflow-hidden">
+                        {item.image && (
+                          <img
+                            src={item.image}
+                            alt={item.name}
+                            className="w-full h-full object-cover block"
+                          />
                         )}
                       </div>
 
-                      <button
-                        onClick={() => setOpenDish(item)}
-                        className="mt-2 px-4 py-1.5 text-sm font-semibold
-                                   border border-[#b23a2f] text-[#b23a2f]
-                                   rounded-lg hover:bg-[#b23a2f]/10
-                                   transition"
-                      >
-                        ADD +
-                      </button>
+                      <div className="flex-1">
+                        <h3 className="font-medium text-[#3E3A36]">
+                          {item.name}
+                        </h3>
+
+                        {item.description && (
+                          <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                            {item.description}
+                          </p>
+                        )}
+
+                        <div className="mt-2 font-medium text-[#b23a2f]">
+                          £{item.price}
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col items-end justify-between">
+                        <div>
+                          {item.isVeg ? (
+                            <Leaf
+                              size={18}
+                              className="text-green-600"
+                            />
+                          ) : (
+                            <Drumstick
+                              size={18}
+                              className="text-red-600"
+                            />
+                          )}
+                        </div>
+
+                        {isCustomizable ? (
+                          <button
+                            onClick={() => setOpenDish(item)}
+                            className="mt-2 px-4 py-1.5 text-sm font-semibold
+                              border border-[#b23a2f] text-[#b23a2f]
+                              rounded-lg hover:bg-[#b23a2f]/10"
+                          >
+                            ADD +
+                          </button>
+                        ) : cartItem ? (
+                          <div className="flex items-center gap-2 border border-[#b23a2f] rounded-lg overflow-hidden">
+                            {/* TRASH when qty === 1 */}
+                            {cartItem.quantity === 1 ? (
+                              <button
+                                onClick={() =>
+                                  updateQuantity(cartItem.id, 0)
+                                }
+                                className="px-3 py-1 text-[#b23a2f] hover:bg-[#b23a2f]/10"
+                                title="Remove"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() =>
+                                  updateQuantity(
+                                    cartItem.id,
+                                    cartItem.quantity - 1
+                                  )
+                                }
+                                className="px-3 py-1 text-[#b23a2f]"
+                              >
+                                -
+                              </button>
+                            )}
+
+                            <span className="px-2 text-sm font-semibold">
+                              {cartItem.quantity}
+                            </span>
+
+                            <button
+                              onClick={() =>
+                                addToCart({
+                                  dishId: item.id,
+                                  name: item.name,
+                                  image: item.image,
+                                  isVeg: item.isVeg,
+                                  size: null,
+                                  addons: [],
+                                  quantity: 1,
+                                  unitPrice: item.price,
+                                  totalPrice: item.price,
+                                })
+                              }
+                              className="px-3 py-1 text-[#b23a2f]"
+                            >
+                              +
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() =>
+                              addToCart({
+                                dishId: item.id,
+                                name: item.name,
+                                image: item.image,
+                                isVeg: item.isVeg,
+                                size: null,
+                                addons: [],
+                                quantity: 1,
+                                unitPrice: item.price,
+                                totalPrice: item.price,
+                              })
+                            }
+                            className="mt-2 px-4 py-1.5 text-sm font-semibold
+                              border border-[#b23a2f] text-[#b23a2f]
+                              rounded-lg hover:bg-[#b23a2f]/10"
+                          >
+                            ADD +
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </section>
         ))}
@@ -170,7 +276,11 @@ const Menu = () => {
         onClick={() => setOpenMobileMenu((prev) => !prev)}
         className={`lg:hidden fixed bottom-6 right-6 z-50 flex items-center gap-2
           px-5 py-3 rounded-full shadow-lg transition-all
-          ${openMobileMenu ? "bg-[#2f2f2f] text-white" : "bg-[#4a2c2a] text-[#f7f1e7]"}
+          ${
+            openMobileMenu
+              ? "bg-[#2f2f2f] text-white"
+              : "bg-[#4a2c2a] text-[#f7f1e7]"
+          }
         `}
       >
         {openMobileMenu ? <X size={18} /> : <MenuIcon size={18} />}
@@ -215,10 +325,6 @@ const Menu = () => {
         dish={openDish}
         open={!!openDish}
         onClose={() => setOpenDish(null)}
-        onAdd={(cartItem) => {
-          addToCart(cartItem);
-          setOpenDish(null);
-        }}
       />
     </div>
   );
