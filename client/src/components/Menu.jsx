@@ -133,6 +133,9 @@ const Menu = () => {
                 const cartItem = getSimpleCartItem(item.id);
                 const isCustomizable =
                   item.sizes?.length || item.addons?.length;
+                console.log("cartItem", cartItem);
+                console.log("isCustomizable", isCustomizable);
+                
 
                 return (
                   <div
@@ -192,7 +195,6 @@ const Menu = () => {
                           </button>
                         ) : cartItem ? (
                           <div className="flex items-center gap-2 border border-[#b23a2f] rounded-lg overflow-hidden">
-                            {/* TRASH when qty === 1 */}
                             {cartItem.quantity === 1 ? (
                               <button
                                 onClick={() =>
