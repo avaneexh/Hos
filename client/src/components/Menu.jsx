@@ -18,7 +18,7 @@ const Menu = () => {
   const items = useCartStore((s) => s.items);
   const addToCart = useCartStore((s) => s.addToCart);
   const updateQuantity = useCartStore((s) => s.updateQuantity);
-  console.log("items", items);
+  console.log("items in cart ", items[0].dishId);
   
   const [activeCategory, setActiveCategory] = useState(null);
   const [openMobileMenu, setOpenMobileMenu] = useState(false);
@@ -84,12 +84,10 @@ const Menu = () => {
       document.removeEventListener("mousedown", handleClickOutside);
   }, [openMobileMenu]);
 
-  const getSimpleCartItem = (dishId) => {
+  const getSimpleCartItem = (dishId) => {    
     return items.find(
       (i) =>
-        i.dishId === dishId &&
-        !i.size &&
-        (!i.addons || i.addons.length === 0)
+        i.dishId === dishId
     );
   };
 
