@@ -35,7 +35,9 @@ model User {
   phone     String?
   image     String?
   role      UserRole @default(USER)
-  password  String
+  password  String? 
+
+  googleId  String? @unique
 
   ratings   DishRating[]  
 
