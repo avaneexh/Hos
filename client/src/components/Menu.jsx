@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useMemo } from "react";
 import MenuSidebar from "./MenuSidebar";
 import {
   Drumstick,
@@ -11,6 +11,7 @@ import {
 import { useMenuStore } from "../store/useMenuStore";
 import DishCustomizer from "./DishCustomizer";
 import { useCartStore } from "../store/useCartStore";
+import GoToTopBtn from "./GoToTopBtn";
 
 const Menu = () => {
   const { menu, getMenu, isLoading } = useMenuStore();
@@ -18,8 +19,16 @@ const Menu = () => {
   const items = useCartStore((s) => s.items);
   const addToCart = useCartStore((s) => s.addToCart);
   const updateQuantity = useCartStore((s) => s.updateQuantity);
-  console.log("items in cart ", items[0].dishId);
+
   
+  const cartMap = useMemo(() => {
+    const map = {};
+    items?.forEach((c) => {
+      map[String(c.dishId)] = c;
+    });
+    return map;
+  }, [items]);
+
   const [activeCategory, setActiveCategory] = useState(null);
   const [openMobileMenu, setOpenMobileMenu] = useState(false);
   const [openDish, setOpenDish] = useState(null);
@@ -84,13 +93,6 @@ const Menu = () => {
       document.removeEventListener("mousedown", handleClickOutside);
   }, [openMobileMenu]);
 
-  const getSimpleCartItem = (dishId) => {    
-    return items.find(
-      (i) =>
-        i.dishId === dishId
-    );
-  };
-
   if (isLoading) {
     return (
       <div className="flex mt-4 justify-center h-screen bg-[#faf6ef]">
@@ -128,12 +130,14 @@ const Menu = () => {
 
             <div className="space-y-4">
               {section.items.map((item) => {
-                const cartItem = getSimpleCartItem(item.id);
-                const isCustomizable =
-                  item.sizes?.length || item.addons?.length;
-                console.log("cartItem", cartItem);
-                console.log("isCustomizable", isCustomizable);
-                
+                const cartItem = cartMap[String(item.id)];
+
+               
+                const hasSizes =
+                  Array.isArray(item?.sizes) && item.sizes.length > 0;
+                const hasAddons =
+                  Array.isArray(item?.addons) && item.addons.length > 0;
+                const isCustomizable = hasSizes || hasAddons;                
 
                 return (
                   <div
@@ -170,36 +174,19 @@ const Menu = () => {
                       <div className="flex flex-col items-end justify-between">
                         <div>
                           {item.isVeg ? (
-                            <Leaf
-                              size={18}
-                              className="text-green-600"
-                            />
+                            <Leaf size={18} className="text-green-600" />
                           ) : (
-                            <Drumstick
-                              size={18}
-                              className="text-red-600"
-                            />
+                            <Drumstick size={18} className="text-red-600" />
                           )}
                         </div>
 
-                        {isCustomizable ? (
-                          <button
-                            onClick={() => setOpenDish(item)}
-                            className="mt-2 px-4 py-1.5 text-sm font-semibold
-                              border border-[#b23a2f] text-[#b23a2f]
-                              rounded-lg hover:bg-[#b23a2f]/10"
-                          >
-                            ADD +
-                          </button>
-                        ) : cartItem ? (
-                          <div className="flex items-center gap-2 border border-[#b23a2f] rounded-lg overflow-hidden">
+                        
+                        {cartItem ? (
+                          <div className="flex items-center border border-[#b23a2f] rounded-lg overflow-hidden">
                             {cartItem.quantity === 1 ? (
                               <button
-                                onClick={() =>
-                                  updateQuantity(cartItem.id, 0)
-                                }
+                                onClick={() => updateQuantity(cartItem.id, 0)}
                                 className="px-3 py-1 text-[#b23a2f] hover:bg-[#b23a2f]/10"
-                                title="Remove"
                               >
                                 <Trash2 size={16} />
                               </button>
@@ -240,6 +227,15 @@ const Menu = () => {
                               +
                             </button>
                           </div>
+                        ) : isCustomizable ? (
+                          <button
+                            onClick={() => setOpenDish(item)}
+                            className="mt-2 px-4 py-1.5 text-sm font-semibold
+                            border border-[#b23a2f] text-[#b23a2f]
+                            rounded-lg hover:bg-[#b23a2f]/10"
+                          >
+                            ADD +
+                          </button>
                         ) : (
                           <button
                             onClick={() =>
@@ -256,8 +252,8 @@ const Menu = () => {
                               })
                             }
                             className="mt-2 px-4 py-1.5 text-sm font-semibold
-                              border border-[#b23a2f] text-[#b23a2f]
-                              rounded-lg hover:bg-[#b23a2f]/10"
+                            border border-[#b23a2f] text-[#b23a2f]
+                            rounded-lg hover:bg-[#b23a2f]/10"
                           >
                             ADD +
                           </button>
@@ -272,60 +268,13 @@ const Menu = () => {
         ))}
       </main>
 
-      <button
-        onClick={() => setOpenMobileMenu((prev) => !prev)}
-        className={`lg:hidden fixed bottom-6 right-6 z-50 flex items-center gap-2
-          px-5 py-3 rounded-full shadow-lg transition-all
-          ${
-            openMobileMenu
-              ? "bg-[#2f2f2f] text-white"
-              : "bg-[#4a2c2a] text-[#f7f1e7]"
-          }
-        `}
-      >
-        {openMobileMenu ? <X size={18} /> : <MenuIcon size={18} />}
-        <span className="text-sm font-medium">
-          {openMobileMenu ? "Close" : "Menu"}
-        </span>
-      </button>
-
-      {openMobileMenu && (
-        <div className="lg:hidden fixed inset-0 z-50 bg-black/40 flex items-end justify-center">
-          <div
-            ref={mobileMenuRef}
-            className="mb-20 w-[90%] max-w-sm bg-white rounded-2xl shadow-2xl"
-          >
-            <ul className="py-3">
-              {menu.map((m) => (
-                <li
-                  key={m.category}
-                  onClick={() => {
-                    handleCategoryClick(m.category);
-                    setOpenMobileMenu(false);
-                  }}
-                  className={`flex justify-between px-5 py-3 text-sm font-medium cursor-pointer
-                    ${
-                      activeCategory === m.category
-                        ? "text-[#b23a2f]"
-                        : "text-gray-700"
-                    }
-                  `}
-                >
-                  <span>{m.category}</span>
-                  <span className="text-gray-400 text-xs">
-                    {m.items.length}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      )}
       <DishCustomizer
         dish={openDish}
         open={!!openDish}
         onClose={() => setOpenDish(null)}
       />
+      {!openDish && <GoToTopBtn />}
+
     </div>
   );
 };

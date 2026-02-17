@@ -11,7 +11,7 @@ export const useCartStore = create(
 
         const existing = items.find(
           (i) =>
-            i.dishId === item.dishId &&
+            String(i.dishId) === String(item.dishId) &&
             JSON.stringify(i.size) === JSON.stringify(item.size) &&
             JSON.stringify(i.addons) === JSON.stringify(item.addons)
         );
@@ -48,6 +48,13 @@ export const useCartStore = create(
       },
 
       updateQuantity: (id, quantity) => {
+        if (quantity <= 0) {
+          set({
+            items: get().items.filter((item) => item.id !== id),
+          });
+          return;
+        }
+
         set({
           items: get().items.map((item) =>
             item.id === id
@@ -60,6 +67,7 @@ export const useCartStore = create(
           ),
         });
       },
+
 
       clearCart: () => set({ items: [] }),
 
