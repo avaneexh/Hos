@@ -12,7 +12,8 @@ import AddItem from "./pages/AddItem";
 
 function App() {
   const {authUser, checkAuth, isCheckingAuth } = useAuthStore();
- 
+
+
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);

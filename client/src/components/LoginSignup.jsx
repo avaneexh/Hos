@@ -4,6 +4,9 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
+import { axiosInstance } from "../lib/axios"; 
+import { GoogleLogin } from "@react-oauth/google";
+
 
 
 
@@ -191,17 +194,31 @@ const LoginSignup = ({ onClose }) => {
           <span className="h-px flex-1 bg-black/10" />
         </div>
 
-        <button
-          type="button"
-          className="flex w-full items-center justify-center gap-3 rounded-lg border border-black/10 bg-white py-3 text-sm font-medium hover:cursor-pointer"
-        >
-          <img
-            src="https://www.svgrepo.com/show/475656/google-color.svg"
-            alt="Google"
-            className="h-5"
-          />
-          Continue with Google
-        </button>
+        <GoogleLogin
+          onSuccess={async (cred) => {
+            try {
+              const res = await axiosInstance.post("/auth/google", {
+                token: cred.credential,
+              });
+
+              console.log("Google login success:", res.data);
+
+              useAuthStore.setState({
+                authUser: res.data.user,
+              });
+
+
+              onClose();
+            } catch (err) {
+              console.log("Google login failed", err);
+            }
+          }}
+          onError={() => console.log("Google Login Failed")}
+          theme="outline"
+          size="large"
+          width="100%"
+        />
+
       </div>
     </div>
   );
