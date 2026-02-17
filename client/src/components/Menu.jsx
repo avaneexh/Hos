@@ -12,6 +12,7 @@ import { useMenuStore } from "../store/useMenuStore";
 import DishCustomizer from "./DishCustomizer";
 import { useCartStore } from "../store/useCartStore";
 import GoToTopBtn from "./GoToTopBtn";
+import FloatingCartBtn from "./FloatingCartBtn";
 
 const Menu = () => {
   const { menu, getMenu, isLoading } = useMenuStore();
@@ -274,6 +275,8 @@ const Menu = () => {
         onClose={() => setOpenDish(null)}
       />
       {!openDish && <GoToTopBtn />}
+      {!openDish && <FloatingCartBtn onClick={() => navigate("/cart")} />}
+
 
     </div>
   );
