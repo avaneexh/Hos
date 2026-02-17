@@ -58,7 +58,7 @@ const FloatingCartBtn = ({ onClick }) => {
 
       <div className="flex items-center gap-2 text-sm font-semibold">
         <ShoppingCart size={18} />
-        <span>BASKET</span>
+        <span>Cart</span>
       </div>
     </button>
   );

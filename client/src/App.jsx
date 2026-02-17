@@ -8,6 +8,7 @@ import { Loader } from "lucide-react";
 import { useAuthStore } from './store/useAuthStore';
 import AdminRoute from "./components/AdminRoute";
 import AddItem from "./pages/AddItem";
+import CartPage from "./pages/CartPage";
 
 
 function App() {
@@ -31,6 +32,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route path="/" element={<MenuPage />} />
+          <Route path="/cart" element={<CartPage />} />
         </Route>
 
         <Route element={<AdminRoute/>}>
