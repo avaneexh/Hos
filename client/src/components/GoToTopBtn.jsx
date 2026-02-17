@@ -1,12 +1,14 @@
-import { useEffect, useState } from "react";
 import { ChevronUp } from "lucide-react";
+import { useCartStore } from "../store/useCartStore";
+import { useEffect, useState } from "react";
 
 const GoToTopBtn = () => {
   const [show, setShow] = useState(false);
 
+  const hasCartItems = useCartStore((s) => s.items.length > 0);
+
   useEffect(() => {
     const handleScroll = () => {
-      // top se 200px niche jaate hi button show hoga
       setShow(window.scrollY > 200);
     };
 
@@ -16,22 +18,16 @@ const GoToTopBtn = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const scrollToTop = () => {
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
-  };
-
   if (!show) return null;
 
   return (
     <button
-      onClick={scrollToTop}
-      className="
+      onClick={() =>
+        window.scrollTo({ top: 0, behavior: "smooth" })
+      }
+      className={`
         fixed
-        bottom-6
-        right-6
+        right-4
         z-50
         w-10 h-10
         flex items-center justify-center
@@ -39,10 +35,14 @@ const GoToTopBtn = () => {
         bg-[#2f2f2f]
         text-white
         shadow-lg
-        hover:bg-black
-        hover:scale-110
-        transition
-      "
+        transition-all
+        duration-300
+        ${
+          hasCartItems
+            ? "bottom-20"   
+            : "bottom-4"  
+        }
+      `}
     >
       <ChevronUp size={20} />
     </button>
