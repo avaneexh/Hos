@@ -8,6 +8,12 @@ export const useAuthStore = create((set) => ({
   isCheckingAuth: true,
   isSigningUp: false,
 
+  isAuthModalOpen: false,
+
+  openAuthModal: () => set({ isAuthModalOpen: true }),
+  closeAuthModal: () => set({ isAuthModalOpen: false }),
+
+  
   checkAuth: async () => {
     set({ isCheckingAuth: true });
     try {

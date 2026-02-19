@@ -13,10 +13,11 @@ import DishCustomizer from "./DishCustomizer";
 import { useCartStore } from "../store/useCartStore";
 import GoToTopBtn from "./GoToTopBtn";
 import FloatingCartBtn from "./FloatingCartBtn";
+import { useNavigate } from "react-router-dom";
 
 const Menu = () => {
   const { menu, getMenu, isLoading } = useMenuStore();
-
+  const navigate = useNavigate();
   const items = useCartStore((s) => s.items);
   const addToCart = useCartStore((s) => s.addToCart);
   const updateQuantity = useCartStore((s) => s.updateQuantity);

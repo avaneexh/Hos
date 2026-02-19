@@ -9,6 +9,7 @@ import { useAuthStore } from './store/useAuthStore';
 import AdminRoute from "./components/AdminRoute";
 import AddItem from "./pages/AddItem";
 import CartPage from "./pages/CartPage";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 
 function App() {
@@ -32,7 +33,14 @@ function App() {
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route path="/" element={<MenuPage />} />
-          <Route path="/cart" element={<CartPage />} />
+          <Route
+            path="/cart"
+            element={
+              <ProtectedRoute>
+                <CartPage />
+              </ProtectedRoute>
+            }
+          />
         </Route>
 
         <Route element={<AdminRoute/>}>

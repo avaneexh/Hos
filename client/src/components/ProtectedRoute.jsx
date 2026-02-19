@@ -1,9 +1,14 @@
-import { Navigate, useLocation } from "react-router-dom";
+import { useEffect } from "react";
 import { useAuthStore } from "../store/useAuthStore";
 
 const ProtectedRoute = ({ children }) => {
-  const { authUser, isCheckingAuth } = useAuthStore();
-  const location = useLocation();
+  const { authUser, isCheckingAuth, openAuthModal } = useAuthStore();
+
+  useEffect(() => {
+    if (!isCheckingAuth && !authUser) {
+      openAuthModal();
+    }
+  }, [authUser, isCheckingAuth, openAuthModal]);
 
   if (isCheckingAuth) {
     return (
@@ -14,13 +19,7 @@ const ProtectedRoute = ({ children }) => {
   }
 
   if (!authUser) {
-    return (
-      <Navigate
-        to="/login"
-        replace
-        state={{ from: location }}
-      />
-    );
+    return null;
   }
 
   return children;

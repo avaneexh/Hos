@@ -12,7 +12,7 @@ const Navbar = () => {
   const isAdmin = authUser?.role === "ADMIN";
   const adminRef = useRef(null);
   const mobileMenuRef = useRef(null);
-  const [openAuth, setOpenAuth] = useState(false);
+  const { isAuthModalOpen, openAuthModal, closeAuthModal } = useAuthStore();
   const [openAdmin, setOpenAdmin] = useState(false);
   const [openMobileMenu, setOpenMobileMenu] = useState(false);
 
@@ -108,7 +108,7 @@ return (
 
               {!authUser ? (
                 <button
-                  onClick={() => setOpenAuth(true)}
+                  onClick={openAuthModal}
                   className="flex items-center gap-2 rounded-xl bg-black/5 px-4 py-3 text-sm font-bold text-[#3E3A36] hover:bg-[#cdc5c0]"
                 >
                   <User className="h-4 w-4" />
@@ -196,7 +196,7 @@ return (
           {!authUser ? (
             <button
               onClick={() => {
-                setOpenAuth(true);
+                openAuthModal();;
                 setOpenMobileMenu(false);
               }}
               className="w-full text-left px-5 py-3 text-sm font-semibold text-[#3E3A36]
@@ -221,7 +221,7 @@ return (
     )}
 
 
-    {openAuth && <LoginSignup onClose={() => setOpenAuth(false)} />}
+    {isAuthModalOpen && <LoginSignup onClose={closeAuthModal} />}
   </>
 );
 
