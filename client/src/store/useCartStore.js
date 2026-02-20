@@ -1,6 +1,17 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
+const createCartKey = (item) => {
+  const sizeKey = item.size?.id || item.size?.name || "default";
+
+  const addonsKey = (item.addons || [])
+    .map((a) => a.id || a.name)
+    .sort()
+    .join("-");
+
+  return `${item.dishId}_${sizeKey}_${addonsKey}`;
+};
+
 export const useCartStore = create(
   persist(
     (set, get) => ({
@@ -8,18 +19,14 @@ export const useCartStore = create(
 
       addToCart: (item) => {
         const items = get().items;
+        const cartKey = createCartKey(item);
 
-        const existing = items.find(
-          (i) =>
-            String(i.dishId) === String(item.dishId) &&
-            JSON.stringify(i.size) === JSON.stringify(item.size) &&
-            JSON.stringify(i.addons) === JSON.stringify(item.addons)
-        );
+        const existing = items.find((i) => i.cartKey === cartKey);
 
         if (existing) {
           set({
             items: items.map((i) =>
-              i.id === existing.id
+              i.cartKey === cartKey
                 ? {
                     ...i,
                     quantity: i.quantity + item.quantity,
@@ -35,6 +42,7 @@ export const useCartStore = create(
               {
                 ...item,
                 id: crypto.randomUUID(),
+                cartKey,
               },
             ],
           });
@@ -68,7 +76,6 @@ export const useCartStore = create(
         });
       },
 
-
       clearCart: () => set({ items: [] }),
 
       cartCount: () =>
@@ -79,16 +86,6 @@ export const useCartStore = create(
     }),
     {
       name: "cart-storage",
-      onRehydrateStorage: () => (state) => {
-        console.log(" Cart rehydrated:", state.items);
-      },
     }
   )
-);
-
-useCartStore.subscribe(
-  (state) => state.items,
-  (items) => {
-    console.log(" Cart updated:", items);
-  }
 );

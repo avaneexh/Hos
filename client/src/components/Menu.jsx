@@ -14,6 +14,7 @@ import { useCartStore } from "../store/useCartStore";
 import GoToTopBtn from "./GoToTopBtn";
 import FloatingCartBtn from "./FloatingCartBtn";
 import { useNavigate } from "react-router-dom";
+import RepeatCustomizationPopup from "./RepeatCustomizationPopup";
 
 const Menu = () => {
   const { menu, getMenu, isLoading } = useMenuStore();
@@ -25,15 +26,36 @@ const Menu = () => {
   
   const cartMap = useMemo(() => {
     const map = {};
-    items?.forEach((c) => {
-      map[String(c.dishId)] = c;
+
+    items.forEach((c) => {
+      const key = String(c.dishId);
+
+      if (!map[key]) {
+        map[key] = {
+          totalQty: 0,
+          lastItem: c,
+          items: [],
+        };
+      }
+
+      map[key].totalQty += c.quantity;
+      map[key].lastItem = c;
+      map[key].items.push(c);
     });
+
     return map;
   }, [items]);
+
+
 
   const [activeCategory, setActiveCategory] = useState(null);
   const [openMobileMenu, setOpenMobileMenu] = useState(false);
   const [openDish, setOpenDish] = useState(null);
+  const [repeatDish, setRepeatDish] = useState(null);
+  const [lastCustomization, setLastCustomization] = useState(null);
+  const [repeatCustomizations, setRepeatCustomizations] = useState([]);
+
+
 
   const sectionRefs = useRef({});
   const mobileMenuRef = useRef(null);
@@ -132,15 +154,17 @@ const Menu = () => {
 
             <div className="space-y-4">
               {section.items.map((item) => {
-                const cartItem = cartMap[String(item.id)];
-
+                const cartGroup = cartMap[String(item.id)];
+                const totalQty = cartGroup?.totalQty || 0;
+                const lastItem = cartGroup?.lastItem;
+                const customizations = cartGroup?.items || [];
                
                 const hasSizes =
                   Array.isArray(item?.sizes) && item.sizes.length > 0;
                 const hasAddons =
                   Array.isArray(item?.addons) && item.addons.length > 0;
-                const isCustomizable = hasSizes || hasAddons;                
-
+                const isCustomizable = hasSizes || hasAddons;       
+                
                 return (
                   <div
                     key={item.id}
@@ -183,47 +207,61 @@ const Menu = () => {
                         </div>
 
                         
-                        {cartItem ? (
+                        {totalQty > 0 ? (
                           <div className="flex items-center border border-[#b23a2f] rounded-lg overflow-hidden">
-                            {cartItem.quantity === 1 ? (
+                            {customizations.length > 1 ? (
                               <button
-                                onClick={() => updateQuantity(cartItem.id, 0)}
-                                className="px-3 py-1 text-[#b23a2f] hover:bg-[#b23a2f]/10"
+                                onClick={() => {
+                                  setRepeatDish(item);
+                                  setRepeatCustomizations(customizations);
+                                }}
+                                className="px-3 py-1 text-[#b23a2f]"
                               >
-                                <Trash2 size={16} />
+                                -
                               </button>
-                            ) : (
+                            ) : lastItem?.quantity > 1 ? (
                               <button
                                 onClick={() =>
-                                  updateQuantity(
-                                    cartItem.id,
-                                    cartItem.quantity - 1
-                                  )
+                                  updateQuantity(lastItem.id, lastItem.quantity - 1)
                                 }
                                 className="px-3 py-1 text-[#b23a2f]"
                               >
                                 -
                               </button>
+                            ) : (
+                              <button
+                                onClick={() => updateQuantity(lastItem.id, 0)}
+                                className="px-3 py-1 text-[#b23a2f]"
+                              >
+                                <Trash2 size={16} />
+                              </button>
                             )}
 
                             <span className="px-2 text-sm font-semibold">
-                              {cartItem.quantity}
+                              {totalQty}
                             </span>
 
                             <button
-                              onClick={() =>
-                                addToCart({
-                                  dishId: item.id,
-                                  name: item.name,
-                                  image: item.image,
-                                  isVeg: item.isVeg,
-                                  size: null,
-                                  addons: [],
-                                  quantity: 1,
-                                  unitPrice: item.price,
-                                  totalPrice: item.price,
-                                })
-                              }
+                              onClick={() => {
+                                if (isCustomizable && customizations.length > 0) {
+                                  setRepeatDish(item);
+                                  setRepeatCustomizations(customizations);
+                                } else if (isCustomizable) {
+                                  setOpenDish(item);
+                                } else {
+                                  addToCart({
+                                    dishId: item.id,
+                                    name: item.name,
+                                    image: item.image,
+                                    isVeg: item.isVeg,
+                                    size: null,
+                                    addons: [],
+                                    quantity: 1,
+                                    unitPrice: item.price,
+                                    totalPrice: item.price,
+                                  });
+                                }
+                              }}
                               className="px-3 py-1 text-[#b23a2f]"
                             >
                               +
@@ -260,6 +298,8 @@ const Menu = () => {
                             ADD +
                           </button>
                         )}
+
+
                       </div>
                     </div>
                   </div>
@@ -275,6 +315,17 @@ const Menu = () => {
         open={!!openDish}
         onClose={() => setOpenDish(null)}
       />
+      <RepeatCustomizationPopup
+        open={!!repeatDish}
+        dish={repeatDish}
+        customizations={repeatCustomizations}
+        onClose={() => setRepeatDish(null)}
+        onAddNew={() => {
+          setOpenDish(repeatDish);
+          setRepeatDish(null);
+        }}
+      />
+
       {!openDish && <GoToTopBtn />}
       {!openDish && <FloatingCartBtn onClick={() => navigate("/cart")} />}
 
