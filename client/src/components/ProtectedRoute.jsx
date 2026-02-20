@@ -1,12 +1,16 @@
 import { useEffect } from "react";
 import { useAuthStore } from "../store/useAuthStore";
+import { useNavigate } from "react-router-dom";
 
 const ProtectedRoute = ({ children }) => {
   const { authUser, isCheckingAuth, openAuthModal } = useAuthStore();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!isCheckingAuth && !authUser) {
+
       openAuthModal();
+      navigate("/")
     }
   }, [authUser, isCheckingAuth, openAuthModal]);
 
