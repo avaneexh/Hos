@@ -1,17 +1,29 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { X, Minus, Plus, Trash2 } from "lucide-react";
 import { useCartStore } from "../store/useCartStore";
 
 const RepeatCustomizationPopup = ({
   open,
   dish,
-  customizations = [],
   onClose,
   onAddNew,
 }) => {
+  const items = useCartStore((s) => s.items);
   const addToCart = useCartStore((s) => s.addToCart);
   const updateQuantity = useCartStore((s) => s.updateQuantity);
   const removeFromCart = useCartStore((s) => s.removeFromCart);
+
+ 
+
+  const customizations = items.filter(
+  (c) => dish && String(c.dishId) === String(dish.id)
+  );
+
+  useEffect(() => {
+    if (open && customizations.length === 0) {
+      onClose();
+    }
+  }, [customizations.length, open, onClose]);
 
   if (!open || !dish) return null;
 
@@ -46,7 +58,7 @@ const RepeatCustomizationPopup = ({
 
             return (
               <div
-                key={item.id}
+                key={item.cartItemId}
                 className="bg-[#efe6d8] rounded-xl p-3 flex items-center gap-3"
               >
                 <img
@@ -76,7 +88,9 @@ const RepeatCustomizationPopup = ({
                 <div className="flex items-center gap-2 bg-[#e6ddcf] rounded-xl px-2 py-1">
                   {item.quantity === 1 ? (
                     <button
-                      onClick={() => removeFromCart(item.id)}
+                      onClick={() =>
+                        removeFromCart(item.cartItemId)
+                      }
                       className="text-[#b23a2f]"
                     >
                       <Trash2 size={14} />
@@ -84,7 +98,10 @@ const RepeatCustomizationPopup = ({
                   ) : (
                     <button
                       onClick={() =>
-                        updateQuantity(item.id, item.quantity - 1)
+                        updateQuantity(
+                          item.cartItemId,
+                          item.quantity - 1
+                        )
                       }
                       className="text-[#b23a2f]"
                     >
@@ -106,8 +123,6 @@ const RepeatCustomizationPopup = ({
                         size: item.size || null,
                         addons: item.addons || [],
                         quantity: 1,
-                        unitPrice: item.unitPrice,
-                        totalPrice: item.unitPrice,
                       })
                     }
                     className="text-[#b23a2f]"

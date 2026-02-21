@@ -1,13 +1,6 @@
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import MenuSidebar from "./MenuSidebar";
-import {
-  Drumstick,
-  Leaf,
-  Loader,
-  Utensils as MenuIcon,
-  X,
-  Trash2,
-} from "lucide-react";
+import { Drumstick, Leaf, Loader, Trash2 } from "lucide-react";
 import { useMenuStore } from "../store/useMenuStore";
 import DishCustomizer from "./DishCustomizer";
 import { useCartStore } from "../store/useCartStore";
@@ -19,11 +12,11 @@ import RepeatCustomizationPopup from "./RepeatCustomizationPopup";
 const Menu = () => {
   const { menu, getMenu, isLoading } = useMenuStore();
   const navigate = useNavigate();
+
   const items = useCartStore((s) => s.items);
   const addToCart = useCartStore((s) => s.addToCart);
   const updateQuantity = useCartStore((s) => s.updateQuantity);
 
-  
   const cartMap = useMemo(() => {
     const map = {};
 
@@ -39,23 +32,19 @@ const Menu = () => {
       }
 
       map[key].totalQty += c.quantity;
-      map[key].lastItem = c;
       map[key].items.push(c);
+      map[key].lastItem =
+        map[key].items[map[key].items.length - 1];
     });
 
     return map;
   }, [items]);
 
-
-
   const [activeCategory, setActiveCategory] = useState(null);
   const [openMobileMenu, setOpenMobileMenu] = useState(false);
   const [openDish, setOpenDish] = useState(null);
   const [repeatDish, setRepeatDish] = useState(null);
-  const [lastCustomization, setLastCustomization] = useState(null);
   const [repeatCustomizations, setRepeatCustomizations] = useState([]);
-
-
 
   const sectionRefs = useRef({});
   const mobileMenuRef = useRef(null);
@@ -145,7 +134,9 @@ const Menu = () => {
         {menu.map((section) => (
           <section
             key={section.category}
-            ref={(el) => (sectionRefs.current[section.category] = el)}
+            ref={(el) =>
+              (sectionRefs.current[section.category] = el)
+            }
             data-category={section.category}
           >
             <h2 className="text-lg font-semibold mb-4">
@@ -158,13 +149,16 @@ const Menu = () => {
                 const totalQty = cartGroup?.totalQty || 0;
                 const lastItem = cartGroup?.lastItem;
                 const customizations = cartGroup?.items || [];
-               
+
                 const hasSizes =
-                  Array.isArray(item?.sizes) && item.sizes.length > 0;
+                  Array.isArray(item?.sizes) &&
+                  item.sizes.length > 0;
                 const hasAddons =
-                  Array.isArray(item?.addons) && item.addons.length > 0;
-                const isCustomizable = hasSizes || hasAddons;       
-                
+                  Array.isArray(item?.addons) &&
+                  item.addons.length > 0;
+                const isCustomizable =
+                  hasSizes || hasAddons;
+
                 return (
                   <div
                     key={item.id}
@@ -200,20 +194,27 @@ const Menu = () => {
                       <div className="flex flex-col items-end justify-between">
                         <div>
                           {item.isVeg ? (
-                            <Leaf size={18} className="text-green-600" />
+                            <Leaf
+                              size={18}
+                              className="text-green-600"
+                            />
                           ) : (
-                            <Drumstick size={18} className="text-red-600" />
+                            <Drumstick
+                              size={18}
+                              className="text-red-600"
+                            />
                           )}
                         </div>
 
-                        
                         {totalQty > 0 ? (
                           <div className="flex items-center border border-[#b23a2f] rounded-lg overflow-hidden">
                             {customizations.length > 1 ? (
                               <button
                                 onClick={() => {
                                   setRepeatDish(item);
-                                  setRepeatCustomizations(customizations);
+                                  setRepeatCustomizations(
+                                    customizations
+                                  );
                                 }}
                                 className="px-3 py-1 text-[#b23a2f]"
                               >
@@ -222,7 +223,10 @@ const Menu = () => {
                             ) : lastItem?.quantity > 1 ? (
                               <button
                                 onClick={() =>
-                                  updateQuantity(lastItem.id, lastItem.quantity - 1)
+                                  updateQuantity(
+                                    lastItem.cartItemId,
+                                    lastItem.quantity - 1
+                                  )
                                 }
                                 className="px-3 py-1 text-[#b23a2f]"
                               >
@@ -230,7 +234,12 @@ const Menu = () => {
                               </button>
                             ) : (
                               <button
-                                onClick={() => updateQuantity(lastItem.id, 0)}
+                                onClick={() =>
+                                  updateQuantity(
+                                    lastItem.cartItemId,
+                                    0
+                                  )
+                                }
                                 className="px-3 py-1 text-[#b23a2f]"
                               >
                                 <Trash2 size={16} />
@@ -243,9 +252,14 @@ const Menu = () => {
 
                             <button
                               onClick={() => {
-                                if (isCustomizable && customizations.length > 0) {
+                                if (
+                                  isCustomizable &&
+                                  customizations.length > 0
+                                ) {
                                   setRepeatDish(item);
-                                  setRepeatCustomizations(customizations);
+                                  setRepeatCustomizations(
+                                    customizations
+                                  );
                                 } else if (isCustomizable) {
                                   setOpenDish(item);
                                 } else {
@@ -257,8 +271,6 @@ const Menu = () => {
                                     size: null,
                                     addons: [],
                                     quantity: 1,
-                                    unitPrice: item.price,
-                                    totalPrice: item.price,
                                   });
                                 }
                               }}
@@ -269,7 +281,9 @@ const Menu = () => {
                           </div>
                         ) : isCustomizable ? (
                           <button
-                            onClick={() => setOpenDish(item)}
+                            onClick={() =>
+                              setOpenDish(item)
+                            }
                             className="mt-2 px-4 py-1.5 text-sm font-semibold
                             border border-[#b23a2f] text-[#b23a2f]
                             rounded-lg hover:bg-[#b23a2f]/10"
@@ -287,8 +301,6 @@ const Menu = () => {
                                 size: null,
                                 addons: [],
                                 quantity: 1,
-                                unitPrice: item.price,
-                                totalPrice: item.price,
                               })
                             }
                             className="mt-2 px-4 py-1.5 text-sm font-semibold
@@ -298,8 +310,6 @@ const Menu = () => {
                             ADD +
                           </button>
                         )}
-
-
                       </div>
                     </div>
                   </div>
@@ -315,6 +325,7 @@ const Menu = () => {
         open={!!openDish}
         onClose={() => setOpenDish(null)}
       />
+
       <RepeatCustomizationPopup
         open={!!repeatDish}
         dish={repeatDish}
@@ -326,10 +337,12 @@ const Menu = () => {
         }}
       />
 
-      {!openDish && <GoToTopBtn />}
-      {!openDish && <FloatingCartBtn onClick={() => navigate("/cart")} />}
-
-
+      {!openDish && !repeatDish &&  <GoToTopBtn />}
+      {!openDish && !repeatDish &&  (
+        <FloatingCartBtn
+          onClick={() => navigate("/cart")}
+        />
+      )}
     </div>
   );
 };

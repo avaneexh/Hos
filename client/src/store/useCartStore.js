@@ -5,11 +5,22 @@ const createCartKey = (item) => {
   const sizeKey = item.size?.id || item.size?.name || "default";
 
   const addonsKey = (item.addons || [])
-    .map((a) => a.id || a.name)
+    .map((a) => String(a.id || a.name))
     .sort()
     .join("-");
 
   return `${item.dishId}_${sizeKey}_${addonsKey}`;
+};
+
+const calculateUnitPrice = (item) => {
+  const sizePrice = item.size?.price || 0;
+
+  const addonsPrice = (item.addons || []).reduce(
+    (sum, a) => sum + (a.price || 0),
+    0
+  );
+
+  return sizePrice + addonsPrice;
 };
 
 export const useCartStore = create(
@@ -18,19 +29,32 @@ export const useCartStore = create(
       items: [],
 
       addToCart: (item) => {
-        const items = get().items;
-        const cartKey = createCartKey(item);
+        const currentItems = get().items;
 
-        const existing = items.find((i) => i.cartKey === cartKey);
+        const unitPrice = calculateUnitPrice(item);
+
+        const preparedItem = {
+          ...item,
+          unitPrice,
+          totalPrice: unitPrice * item.quantity,
+        };
+
+        const cartKey = createCartKey(preparedItem);
+
+        const existing = currentItems.find(
+          (i) => i.cartKey === cartKey
+        );
 
         if (existing) {
           set({
-            items: items.map((i) =>
+            items: currentItems.map((i) =>
               i.cartKey === cartKey
                 ? {
                     ...i,
-                    quantity: i.quantity + item.quantity,
-                    totalPrice: i.totalPrice + item.totalPrice,
+                    quantity: i.quantity + preparedItem.quantity,
+                    totalPrice:
+                      i.unitPrice *
+                      (i.quantity + preparedItem.quantity),
                   }
                 : i
             ),
@@ -38,10 +62,10 @@ export const useCartStore = create(
         } else {
           set({
             items: [
-              ...items,
+              ...currentItems,
               {
-                ...item,
-                id: crypto.randomUUID(),
+                ...preparedItem,
+                cartItemId: crypto.randomUUID(),
                 cartKey,
               },
             ],
@@ -49,23 +73,27 @@ export const useCartStore = create(
         }
       },
 
-      removeFromCart: (id) => {
+      removeFromCart: (cartItemId) => {
         set({
-          items: get().items.filter((item) => item.id !== id),
+          items: get().items.filter(
+            (item) => item.cartItemId !== cartItemId
+          ),
         });
       },
 
-      updateQuantity: (id, quantity) => {
+      updateQuantity: (cartItemId, quantity) => {
         if (quantity <= 0) {
           set({
-            items: get().items.filter((item) => item.id !== id),
+            items: get().items.filter(
+              (item) => item.cartItemId !== cartItemId
+            ),
           });
           return;
         }
 
         set({
           items: get().items.map((item) =>
-            item.id === id
+            item.cartItemId === cartItemId
               ? {
                   ...item,
                   quantity,
@@ -79,10 +107,16 @@ export const useCartStore = create(
       clearCart: () => set({ items: [] }),
 
       cartCount: () =>
-        get().items.reduce((sum, item) => sum + item.quantity, 0),
+        get().items.reduce(
+          (sum, item) => sum + item.quantity,
+          0
+        ),
 
       cartTotal: () =>
-        get().items.reduce((sum, item) => sum + item.totalPrice, 0),
+        get().items.reduce(
+          (sum, item) => sum + item.totalPrice,
+          0
+        ),
     }),
     {
       name: "cart-storage",
