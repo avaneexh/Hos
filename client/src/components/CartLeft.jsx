@@ -5,7 +5,6 @@ import { useCartStore } from "../store/useCartStore";
 const CartItemsSection = () => {
   const items = useCartStore((state) => state.items);
   const updateQuantity = useCartStore((state) => state.updateQuantity);
-  const cartTotal = useCartStore((state) => state.cartTotal);
 
   if (!items || items.length === 0) {
     return (
@@ -19,14 +18,12 @@ const CartItemsSection = () => {
     <div
       className="
         w-full
-        lg:max-w-xl
-        xl:max-w-2xl
-        mx-auto
         bg-[#faf6ef]
         border border-[#e5ddd1]
         rounded-2xl
-        shadow-[0_8px_30px_rgba(0,0,0,0.08)]
-        p-4 sm:p-5
+        shadow-[0_10px_25px_rgba(0,0,0,0.06)]
+        px-4 sm:px-5
+        py-2
         flex flex-col
       "
     >
@@ -52,7 +49,14 @@ const CartItemsSection = () => {
         return (
           <div
             key={item.cartItemId}
-            className="w-full flex items-start gap-3 sm:gap-4 py-4 border-b border-[#e5ddd1]"
+            className="
+              w-full
+              flex items-start
+              gap-3 sm:gap-4
+              py-4
+              border-b border-[#e5ddd1]
+              last:border-b-0
+            "
           >
             <img
               src={item.image}
@@ -78,8 +82,9 @@ const CartItemsSection = () => {
               </p>
             </div>
 
-            <div className="flex flex-col items-end gap-1">
-              <div className="flex items-center gap-2 border border-[#b23a2f] rounded-lg mt-2 px-1 py-1 text-sm bg-[#f3eadd]">
+            {/* RIGHT SIDE — QTY + TOTAL */}
+            <div className="flex flex-col items-end gap-1 shrink-0">
+              <div className="flex items-center gap-2 border border-[#b23a2f] rounded-lg px-2 py-1 bg-[#f3eadd]">
                 <button
                   onClick={() =>
                     updateQuantity(
