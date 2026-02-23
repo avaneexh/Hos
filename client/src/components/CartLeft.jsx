@@ -1,11 +1,11 @@
 import React from "react";
-import { Minus, Plus, Trash2 } from "lucide-react";
+import { Minus, Plus } from "lucide-react";
 import { useCartStore } from "../store/useCartStore";
 
 const CartItemsSection = () => {
   const items = useCartStore((state) => state.items);
-  const removeFromCart = useCartStore((state) => state.removeFromCart);
   const updateQuantity = useCartStore((state) => state.updateQuantity);
+  const cartTotal = useCartStore((state) => state.cartTotal);
 
   if (!items || items.length === 0) {
     return (
@@ -16,9 +16,23 @@ const CartItemsSection = () => {
   }
 
   return (
-    <div className="w-full flex flex-col">
+    <div
+      className="
+        w-full
+        lg:max-w-xl
+        xl:max-w-2xl
+        mx-auto
+        bg-[#faf6ef]
+        border border-[#e5ddd1]
+        rounded-2xl
+        shadow-[0_8px_30px_rgba(0,0,0,0.08)]
+        p-4 sm:p-5
+        flex flex-col
+      "
+    >
       {items.map((item) => {
         const unit = Number(item.unitPrice || 0);
+        const total = unit * (item.quantity || 0);
 
         const sizeText =
           item.size?.name ||
@@ -37,17 +51,17 @@ const CartItemsSection = () => {
 
         return (
           <div
-            key={item.id}
-            className="w-full flex items-center gap-3 sm:gap-4 py-4 border-b"
+            key={item.cartItemId}
+            className="w-full flex items-start gap-3 sm:gap-4 py-4 border-b border-[#e5ddd1]"
           >
             <img
               src={item.image}
               alt={item.name}
-              className="w-14 h-14 sm:w-16 sm:h-16 rounded-md object-cover shrink-0"
+              className="w-14 h-14 sm:w-16 sm:h-16 rounded-lg object-cover shrink-0"
             />
 
             <div className="flex-1 min-w-0">
-              <h3 className="font-medium text-sm sm:text-base truncate">
+              <h3 className="font-medium text-sm sm:text-base text-[#3E3A36] truncate">
                 {item.name}
               </h3>
 
@@ -59,41 +73,46 @@ const CartItemsSection = () => {
                 </p>
               )}
 
-              <p className="text-red-500 font-medium mt-1 text-sm">
+              <p className="text-[#b23a2f] font-medium text-sm mt-1">
                 £{unit.toFixed(2)}
               </p>
             </div>
 
-            <div className="flex items-center gap-2 border border-red-300 rounded-lg px-2 py-1">
-              <button
-                onClick={() =>
-                  updateQuantity(item.id, item.quantity - 1)
-                }
-                className="w-6 h-6 flex items-center justify-center text-red-500"
-              >
-                <Minus size={14} />
-              </button>
+            <div className="flex flex-col items-end gap-1">
+              <div className="flex items-center gap-2 border border-[#b23a2f] rounded-lg mt-2 px-1 py-1 text-sm bg-[#f3eadd]">
+                <button
+                  onClick={() =>
+                    updateQuantity(
+                      item.cartItemId,
+                      item.quantity - 1
+                    )
+                  }
+                  className="w-6 h-6 flex items-center justify-center text-[#b23a2f]"
+                >
+                  <Minus size={14} />
+                </button>
 
-              <span className="w-5 text-center text-sm font-medium">
-                {item.quantity}
+                <span className="w-5 text-center text-sm font-semibold text-[#3E3A36]">
+                  {item.quantity}
+                </span>
+
+                <button
+                  onClick={() =>
+                    updateQuantity(
+                      item.cartItemId,
+                      item.quantity + 1
+                    )
+                  }
+                  className="w-6 h-6 flex items-center justify-center text-[#b23a2f]"
+                >
+                  <Plus size={14} />
+                </button>
+              </div>
+
+              <span className="text-sm font-semibold text-[#3E3A36]">
+                £{total.toFixed(2)}
               </span>
-
-              <button
-                onClick={() =>
-                  updateQuantity(item.id, item.quantity + 1)
-                }
-                className="w-6 h-6 flex items-center justify-center text-red-500"
-              >
-                <Plus size={14} />
-              </button>
             </div>
-
-            <button
-              onClick={() => removeFromCart(item.id)}
-              className="ml-1 sm:ml-2 text-red-500"
-            >
-              <Trash2 size={16} />
-            </button>
           </div>
         );
       })}
