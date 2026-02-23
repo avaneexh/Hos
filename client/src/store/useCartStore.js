@@ -28,6 +28,10 @@ export const useCartStore = create(
     (set, get) => ({
       items: [],
 
+      deliveryType: "takeaway",
+
+      setDeliveryType: (type) => set({ deliveryType: type }),
+
       addToCart: (item) => {
         const currentItems = get().items;
 
