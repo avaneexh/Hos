@@ -22,12 +22,13 @@ const CartItemsSection = () => {
     <div
       className="
         relative
+        cart-scroll
         bg-[#faf6ef]
         border border-[#e5ddd1]
         rounded-2xl
         shadow-[0_12px_30px_rgba(0,0,0,0.06)]
         flex flex-col
-        h-full
+        lg:h-full
       "
     >
 

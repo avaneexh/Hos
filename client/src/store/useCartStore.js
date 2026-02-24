@@ -29,8 +29,11 @@ export const useCartStore = create(
       items: [],
 
       deliveryType: "takeaway",
+      paymentMethod: "card",
 
       setDeliveryType: (type) => set({ deliveryType: type }),
+
+      setPaymentMethod: (method) => set({ paymentMethod: method }),
 
       addToCart: (item) => {
         const currentItems = get().items;

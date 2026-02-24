@@ -18,3 +18,30 @@
   scrollbar-width: none;
 }
 
+.cart-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
+.cart-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.cart-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.cart-scroll::-webkit-scrollbar-thumb {
+  background-color: transparent;
+  border-radius: 999px;
+  transition: background-color 0.25s ease;
+}
+
+.cart-scroll:hover::-webkit-scrollbar-thumb {
+  background-color: rgba(178, 58, 47, 0.45);
+}
+
+.cart-scroll::-webkit-scrollbar-thumb:active {
+  background-color: rgba(178, 58, 47, 0.8);
+}
+
