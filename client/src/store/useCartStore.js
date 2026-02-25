@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 const createCartKey = (item) => {
-  const sizeKey = item.size?.id || item.size?.name || "default";
+  const sizeKey = item.size?.id || item.size?.name || "nosize";
 
   const addonsKey = (item.addons || [])
     .map((a) => String(a.id || a.name))
@@ -13,14 +13,18 @@ const createCartKey = (item) => {
 };
 
 const calculateUnitPrice = (item) => {
-  const sizePrice = item.size?.price || 0;
+  const base =
+    item.size?.price ??
+    item.basePrice ??
+    item.price ??
+    0;
 
   const addonsPrice = (item.addons || []).reduce(
     (sum, a) => sum + (a.price || 0),
     0
   );
 
-  return sizePrice + addonsPrice;
+  return base + addonsPrice;
 };
 
 export const useCartStore = create(
@@ -47,6 +51,7 @@ export const useCartStore = create(
         };
 
         const cartKey = createCartKey(preparedItem);
+        // console.log(item);
 
         const existing = currentItems.find(
           (i) => i.cartKey === cartKey
@@ -58,10 +63,13 @@ export const useCartStore = create(
               i.cartKey === cartKey
                 ? {
                     ...i,
-                    quantity: i.quantity + preparedItem.quantity,
+                    quantity:
+                      i.quantity +
+                      preparedItem.quantity,
                     totalPrice:
                       i.unitPrice *
-                      (i.quantity + preparedItem.quantity),
+                      (i.quantity +
+                        preparedItem.quantity),
                   }
                 : i
             ),
@@ -83,7 +91,8 @@ export const useCartStore = create(
       removeFromCart: (cartItemId) => {
         set({
           items: get().items.filter(
-            (item) => item.cartItemId !== cartItemId
+            (item) =>
+              item.cartItemId !== cartItemId
           ),
         });
       },
@@ -92,7 +101,8 @@ export const useCartStore = create(
         if (quantity <= 0) {
           set({
             items: get().items.filter(
-              (item) => item.cartItemId !== cartItemId
+              (item) =>
+                item.cartItemId !== cartItemId
             ),
           });
           return;
@@ -104,7 +114,8 @@ export const useCartStore = create(
               ? {
                   ...item,
                   quantity,
-                  totalPrice: item.unitPrice * quantity,
+                  totalPrice:
+                    item.unitPrice * quantity,
                 }
               : item
           ),

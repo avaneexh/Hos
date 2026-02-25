@@ -1,9 +1,6 @@
 import jwt from "jsonwebtoken";
 import { OAuth2Client } from "google-auth-library";
-import { prisma } from "../lib/db.js";
-import pkg from "@prisma/client";
-
-const { UserRole } = pkg;
+import User from "../models/User.model.js";
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -24,12 +21,7 @@ export const googleLogin = async (req, res) => {
 
     const payload = ticket.getPayload();
 
-    const {
-      sub: googleId,
-      email,
-      name,
-      picture,
-    } = payload;
+    const { sub: googleId, email, name, picture } = payload;
 
     if (!email) {
       return res.status(400).json({
@@ -37,34 +29,33 @@ export const googleLogin = async (req, res) => {
       });
     }
 
-    let user = await prisma.user.findUnique({
-      where: { email: email.toLowerCase() },
+    let user = await User.findOne({
+      email: email.toLowerCase(),
     });
 
     if (user && !user.googleId) {
-      user = await prisma.user.update({
-        where: { id: user.id },
-        data: {
+      user = await User.findByIdAndUpdate(
+        user._id,
+        {
           googleId,
           image: user.image || picture,
         },
-      });
+        { new: true }
+      );
     }
 
     if (!user) {
-      user = await prisma.user.create({
-        data: {
-          email: email.toLowerCase(),
-          name,
-          image: picture,
-          googleId,
-          role: UserRole.USER,
-        },
+      user = await User.create({
+        email: email.toLowerCase(),
+        name,
+        image: picture,
+        googleId,
+        role: "USER",
       });
     }
 
     const jwtToken = jwt.sign(
-      { id: user.id },
+      { id: user._id },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
@@ -80,7 +71,7 @@ export const googleLogin = async (req, res) => {
       success: true,
       message: "Google login successful",
       user: {
-        id: user.id,
+        id: user._id,
         email: user.email,
         name: user.name,
         phone: user.phone,

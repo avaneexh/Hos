@@ -1,42 +1,55 @@
 import jwt from "jsonwebtoken";
-import { prisma } from "../lib/db.js";
+import User from "../models/User.model.js";
+
 
 export const authMiddleware = async (req, res, next) => {
   try {
-    const token = req.cookies.jwt;
+    const token = req.cookies?.jwt;
+
+    // console.log("token:", token);
 
     if (!token) {
-      return res.status(401).json({ message: "Unauthorized - No token provided" });
+      return res.status(401).json({
+        message: "Unauthorized - No token provided",
+      });
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    const user = await prisma.user.findUnique({
-      where: { id: decoded.id },
-      select: {
-        id: true,
-        image: true,
-        name: true,
-        email: true,
-        role: true,
-      },
-    });
+    const user = await User.findById(decoded.id).select(
+      "_id image name email role"
+    );
 
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({
+        message: "User not found",
+      });
     }
 
-    req.user = user;
+    req.user = {
+      id: user._id,
+      image: user.image,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    };
+
     next();
   } catch (error) {
-    return res.status(401).json({ message: "Unauthorized - Invalid token" });
+    console.log("Auth Error:", error.message);
+    return res.status(401).json({
+      message: "Unauthorized - Invalid token",
+    });
   }
 };
+
 
 export const requireRole = (...allowedRoles) => {
   return (req, res, next) => {
     if (!req.user) {
-      return res.status(401).json({ message: "Unauthorized" });
+      return res.status(401).json({
+        message: "Unauthorized",
+      });
     }
 
     if (!allowedRoles.includes(req.user.role)) {

@@ -1,7 +1,9 @@
-import { prisma } from "../lib/db.js";   
-import pkg from '@prisma/client';
-const { DishStatus } = pkg;
-const { FoodType } = pkg;
+import Category from "../models/Category.model.js";
+import Dish from "../models/Dish.model.js";
+import DishSize from "../models/DishSize.model.js";
+import Addon from "../models/Addon.model.js";
+import DishAddon from "../models/DishAddon.model.js";
+
 
 export const addDish = async (req, res) => {
   try {
@@ -13,7 +15,7 @@ export const addDish = async (req, res) => {
       category,
       sizes = [],
       addons = [],
-      allergens = [], 
+      allergens = [],
     } = req.body;
 
     const image = req.file?.path || null;
@@ -25,65 +27,76 @@ export const addDish = async (req, res) => {
       });
     }
 
-    const dishCategory = await prisma.category.upsert({
-      where: { name: category }, 
-      update: {},
-      create: { name: category },
+    let dishCategory = await Category.findOne({ name: category });
+    if (!dishCategory) {
+      dishCategory = await Category.create({ name: category });
+    }
+
+    const dish = await Dish.create({
+      name,
+      description,
+      image,
+      basePrice: Number(basePrice),
+      foodType,
+      category: dishCategory._id,
+      allergens: Array.isArray(allergens) ? allergens : [],
     });
 
-    const dish = await prisma.dish.create({
-      data: {
-        name,
-        description,
-        image,
-        basePrice: Number(basePrice),
-        foodType,
-        categoryId: dishCategory.id,
+    await Category.findByIdAndUpdate(
+      dishCategory._id,
+      { $push: { dishes: dish._id } }
+    );
 
-        allergens: Array.isArray(allergens) ? allergens : [],
+    let sizeIds = [];
+    if (sizes.length) {
+      const createdSizes = await DishSize.insertMany(
+        sizes.map((s) => ({
+          name: s.name,
+          price: Number(s.price),
+          dish: dish._id,
+        }))
+      );
+      sizeIds = createdSizes.map((s) => s._id);
+    }
 
-        sizes: sizes.length
-          ? {
-              create: sizes.map((s) => ({
-                name: s.name,
-                price: Number(s.price),
-              })),
-            }
-          : undefined,
+    let addonBridgeIds = [];
+    for (const a of addons) {
+      let addonDoc = await Addon.findOne({ name: a.name });
 
-        addons: addons.length
-          ? {
-              create: addons.map((a) => ({
-                addon: {
-                  connectOrCreate: {
-                    where: { name: a.name },
-                    create: {
-                      name: a.name,
-                      price: Number(a.price),
-                    },
-                  },
-                },
-              })),
-            }
-          : undefined,
-      },
-      include: {
-        category: true,
-        sizes: true,
-        addons: {
-          include: { addon: true },
-        },
-      },
-    });
+      if (!addonDoc) {
+        addonDoc = await Addon.create({
+          name: a.name,
+          price: Number(a.price),
+        });
+      }
+
+      const bridge = await DishAddon.create({
+        dish: dish._id,
+        addon: addonDoc._id,
+      });
+
+      addonBridgeIds.push(bridge._id);
+    }
+
+    dish.sizes = sizeIds;
+    dish.addons = addonBridgeIds;
+    await dish.save();
+
+    const populatedDish = await Dish.findById(dish._id)
+      .populate("category")
+      .populate("sizes")
+      .populate({
+        path: "addons",
+        populate: { path: "addon" },
+      });
 
     return res.status(201).json({
       success: true,
       message: "Dish added successfully",
-      dish,
+      dish: populatedDish,
     });
   } catch (error) {
     console.error("Add Dish Error:", error);
-
     return res.status(500).json({
       success: false,
       message: "Failed to add dish",
@@ -91,6 +104,7 @@ export const addDish = async (req, res) => {
     });
   }
 };
+
 
 export const editDish = async (req, res) => {
   try {
@@ -115,60 +129,72 @@ export const editDish = async (req, res) => {
 
     let categoryId;
     if (category) {
-      const dishCategory = await prisma.category.upsert({
-        where: { name: category },
-        update: {},
-        create: { name: category },
-      });
-      categoryId = dishCategory.id;
+      let cat = await Category.findOne({ name: category });
+      if (!cat) {
+        cat = await Category.create({ name: category });
+      }
+      categoryId = cat._id;
     }
 
-    const dish = await prisma.dish.update({
-      where: { id },
-      data: {
+    const dish = await Dish.findByIdAndUpdate(
+      id,
+      {
         name,
         description,
         basePrice: basePrice ? Number(basePrice) : undefined,
         foodType,
         image: image || undefined,
-        categoryId,
-
+        category: categoryId,
         allergens: Array.isArray(allergens) ? allergens : undefined,
-
-        sizes: {
-          deleteMany: {},
-          create: sizes.map((s) => ({
-            name: s.name,
-            price: Number(s.price),
-          })),
-        },
-
-        addons: {
-          deleteMany: {},
-          create: addons.map((a) => ({
-            addon: {
-              connectOrCreate: {
-                where: { name: a.name },
-                create: {
-                  name: a.name,
-                  price: Number(a.price),
-                },
-              },
-            },
-          })),
-        },
       },
-      include: {
-        category: true,
-        sizes: true,
-        addons: { include: { addon: true } },
-      },
-    });
+      { new: true }
+    );
+
+    await DishSize.deleteMany({ dish: id });
+    await DishAddon.deleteMany({ dish: id });
+
+    const newSizes = await DishSize.insertMany(
+      sizes.map((s) => ({
+        name: s.name,
+        price: Number(s.price),
+        dish: id,
+      }))
+    );
+
+    const newAddonBridges = [];
+    for (const a of addons) {
+      let addonDoc = await Addon.findOne({ name: a.name });
+      if (!addonDoc) {
+        addonDoc = await Addon.create({
+          name: a.name,
+          price: Number(a.price),
+        });
+      }
+
+      const bridge = await DishAddon.create({
+        dish: id,
+        addon: addonDoc._id,
+      });
+
+      newAddonBridges.push(bridge._id);
+    }
+
+    dish.sizes = newSizes.map((s) => s._id);
+    dish.addons = newAddonBridges;
+    await dish.save();
+
+    const populatedDish = await Dish.findById(id)
+      .populate("category")
+      .populate("sizes")
+      .populate({
+        path: "addons",
+        populate: { path: "addon" },
+      });
 
     res.json({
       success: true,
       message: "Dish updated successfully",
-      dish,
+      dish: populatedDish,
     });
   } catch (error) {
     console.error("Edit Dish Error:", error);
@@ -180,22 +206,17 @@ export const editDish = async (req, res) => {
   }
 };
 
+
 export const changeDishAvailability = async (req, res) => {
   try {
     const { id } = req.params;
     const { isAvailable } = req.body;
 
-    if (!id || typeof isAvailable !== "boolean") {
-      return res.status(400).json({
-        success: false,
-        message: "Dish ID and isAvailable (boolean) are required",
-      });
-    }
-
-    const dish = await prisma.dish.update({
-      where: { id },
-      data: { isAvailable },
-    });
+    const dish = await Dish.findByIdAndUpdate(
+      id,
+      { isAvailable },
+      { new: true }
+    );
 
     return res.json({
       success: true,
@@ -211,22 +232,17 @@ export const changeDishAvailability = async (req, res) => {
   }
 };
 
+
 export const toggleDishInMenu = async (req, res) => {
   try {
     const { id } = req.params;
     const { inMenu } = req.body;
 
-    if (!id || typeof inMenu !== "boolean") {
-      return res.status(400).json({
-        success: false,
-        message: "Dish ID and inMenu (boolean) are required",
-      });
-    }
-
-    const dish = await prisma.dish.update({
-      where: { id },
-      data: { inMenu },
-    });
+    const dish = await Dish.findByIdAndUpdate(
+      id,
+      { inMenu },
+      { new: true }
+    );
 
     return res.json({
       success: true,
@@ -242,16 +258,25 @@ export const toggleDishInMenu = async (req, res) => {
   }
 };
 
+
 export const getAllCategories = async (req, res) => {
   try {
-    const categories = await prisma.category.findMany({
-      orderBy: { order: "asc" },
-      include: {
-        _count: {
-          select: { dishes: true },
+    const categories = await Category.aggregate([
+      {
+        $lookup: {
+          from: "dishes",
+          localField: "_id",
+          foreignField: "category",
+          as: "dishes",
         },
       },
-    });
+      {
+        $addFields: {
+          dishCount: { $size: "$dishes" },
+        },
+      },
+      { $sort: { order: 1 } },
+    ]);
 
     res.json({
       success: true,
@@ -266,25 +291,20 @@ export const getAllCategories = async (req, res) => {
   }
 };
 
+
 export const deleteDish = async (req, res) => {
   try {
     const { id } = req.params;
 
-    if (!id) {
-      return res.status(400).json({
-        success: false,
-        message: "Dish ID is required",
-      });
-    }
-
-    const dish = await prisma.dish.update({
-      where: { id },
-      data: {
+    const dish = await Dish.findByIdAndUpdate(
+      id,
+      {
         isDeleted: true,
-        inMenu: false,      
-        isAvailable: false 
+        inMenu: false,
+        isAvailable: false,
       },
-    });
+      { new: true }
+    );
 
     return res.json({
       success: true,

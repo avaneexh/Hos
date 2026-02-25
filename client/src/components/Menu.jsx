@@ -34,7 +34,7 @@ const Menu = () => {
       map[key].totalQty += c.quantity;
       map[key].items.push(c);
       map[key].lastItem =
-        map[key].items[map[key].items.length - 1];
+      map[key].items[map[key].items.length - 1];
     });
 
     return map;
@@ -268,6 +268,8 @@ const Menu = () => {
                                     name: item.name,
                                     image: item.image,
                                     isVeg: item.isVeg,
+                                    basePrice: item.price,
+                                    price: item.price,
                                     size: null,
                                     addons: [],
                                     quantity: 1,
@@ -292,17 +294,19 @@ const Menu = () => {
                           </button>
                         ) : (
                           <button
-                            onClick={() =>
+                            onClick={() =>{
                               addToCart({
                                 dishId: item.id,
                                 name: item.name,
                                 image: item.image,
                                 isVeg: item.isVeg,
+                                basePrice: item.price,
+                                price: item.price,
                                 size: null,
                                 addons: [],
                                 quantity: 1,
-                              })
-                            }
+                              });
+                            }}
                             className="mt-2 px-4 py-1.5 text-sm font-semibold
                             border border-[#b23a2f] text-[#b23a2f]
                             rounded-lg hover:bg-[#b23a2f]/10"

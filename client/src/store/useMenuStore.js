@@ -11,6 +11,8 @@ export const useMenuStore = create((set) => ({
     set({ isLoading: true });
     try {
       const res = await axiosInstance.get("/menu");
+      console.log("res", res);
+      
       set({ menu: res.data.menu });
     } catch (error) {
       console.error("Get Menu Error:", error);

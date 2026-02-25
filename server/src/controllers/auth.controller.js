@@ -1,183 +1,176 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { prisma } from "../lib/db.js";          
-
-
-import pkg from '@prisma/client';
-const { UserRole } = pkg;
-
+import User from "../models/User.model.js";
 
 
 export const register = async (req, res) => {
-    const { email, password, firstName, lastName, phone } = req.body;
+  const { email, password, firstName, lastName, phone } = req.body;
 
-    if (!email || !password || !firstName || !phone) {
-        return res.status(400).json({
-            error: "All fields are required"
-        });
+  if (!email || !password || !firstName || !phone) {
+    return res.status(400).json({
+      error: "All fields are required",
+    });
+  }
+
+  const ukPhoneRegex = /^(?:\+?44|0)?7\d{9}$/;
+
+  if (!ukPhoneRegex.test(phone)) {
+    return res.status(400).json({
+      error: "Invalid phone number",
+    });
+  }
+
+  const normalizedPhone = phone.startsWith("0")
+    ? "+44" + phone.slice(1)
+    : phone;
+
+  const name = `${firstName.trim()} ${lastName || ""}`.trim();
+
+  try {
+    const existingUser = await User.findOne({
+      email: email.toLowerCase(),
+    });
+
+    if (existingUser) {
+      return res.status(400).json({
+        error: "User already exists",
+      });
     }
 
-    const ukPhoneRegex = /^(?:\+?44|0)?7\d{9}$/;
+    const hashedPassword = await bcrypt.hash(password, 10);
 
+    const newUser = await User.create({
+      email: email.toLowerCase(),
+      password: hashedPassword,
+      name,
+      phone: normalizedPhone,
+      role: "USER",
+    });
 
-    if (!ukPhoneRegex.test(phone)) {
-        return res.status(400).json({
-            error: "Invalid phone number"
-        });
-    }
+    const token = jwt.sign(
+      { id: newUser._id },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
 
-    const normalizedPhone = phone.startsWith("0")
-        ? "+44" + phone.slice(1)
-        : phone;
+    res.cookie("jwt", token, {
+      httpOnly: true,
+      sameSite: "none",
+      secure: process.env.NODE_ENV !== "development",
+      maxAge: 1000 * 60 * 60 * 24 * 7,
+    });
 
-    const name = `${firstName.trim()} ${lastName || ""}`.trim();
-
-    try {
-        const existingUser = await prisma.user.findUnique({
-            where: { email }
-        });
-
-        if (existingUser) {
-            return res.status(400).json({
-                error: "User already exists"
-            });
-        }
-
-
-        const hashedPassword = await bcrypt.hash(password, 10);
-        // console.log("normalizedPhone", normalizedPhone);
-        
-
-        const newUser = await prisma.user.create({
-            data: {
-                email: email.toLowerCase(),
-                password: hashedPassword,
-                name,
-                phone: normalizedPhone,
-                role: UserRole.USER
-            }
-        });
-
-        const token = jwt.sign(
-            { id: newUser.id },
-            process.env.JWT_SECRET,
-            { expiresIn: "7d" }
-        );
-
-        res.cookie("jwt", token, {
-            httpOnly: true,
-            sameSite: "none",
-            secure: process.env.NODE_ENV !== "development",
-            maxAge: 1000 * 60 * 60 * 24 * 7
-        });
-
-        res.status(201).json({
-            success: true,
-            message: "User created successfully",
-            user: {
-                id: newUser.id,
-                email: newUser.email,
-                name: newUser.name,
-                phone: newUser.phone,
-                role: newUser.role,
-                image: newUser.image
-            }
-        });
-
-    } catch (error) {
-        console.error("Error creating user:", error);
-        res.status(500).json({
-            error: "Error creating user"
-        });
-    }
+    res.status(201).json({
+      success: true,
+      message: "User created successfully",
+      user: {
+        id: newUser._id,
+        email: newUser.email,
+        name: newUser.name,
+        phone: newUser.phone,
+        role: newUser.role,
+        image: newUser.image,
+      },
+    });
+  } catch (error) {
+    console.error("Error creating user:", error);
+    res.status(500).json({
+      error: "Error creating user",
+    });
+  }
 };
 
+
 export const login = async (req, res) => {
-    const {email, password} = req.body;
-    try {
-        const user = await prisma.user.findUnique({
-            where:{
-                email
-            }
-        })
+  const { email, password } = req.body;
 
-        if(!user){
-            return res.status(401).json({
-                error:"user not found"
-            })
-        }
+  try {
+    const user = await User.findOne({
+      email: email.toLowerCase(),
+    });
 
-        const isMatch = await bcrypt.compare(password, user.password);
-
-        if(!isMatch){
-             return res.status(401).json({
-                error:"Invalid credentials"
-            })
-        }
-
-        const token = jwt.sign({id:user.id}, process.env.JWT_SECRET, {
-            expiresIn: "7d"
-        }) 
-
-         res.cookie("jwt", token, {
-            httpOnly:true,
-            sameSite:"none",
-            secure:process.env.NODE_ENV !== "development",
-            maxAge: 1000 * 60 * 60 * 24 * 7, 
-        })
-
-        res.status(200).json({
-         success:true,
-         message:"User creatred successfully",
-         user:{
-            id:user.id,
-            email:user.email,
-            name:user.name,
-            role:user.role,
-            image:user.image
-         }   
-        })
-
-    } catch (error) {
-         console.error("Error Logging user:", error)
-        res.status(500).json({
-            error:"Error Logging User"
-        })
+    if (!user) {
+      return res.status(401).json({
+        error: "User not found",
+      });
     }
-}
+
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      return res.status(401).json({
+        error: "Invalid credentials",
+      });
+    }
+
+    const token = jwt.sign(
+      { id: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    res.cookie("jwt", token, {
+      httpOnly: true,
+      sameSite: "none",
+      secure: process.env.NODE_ENV !== "development",
+      maxAge: 1000 * 60 * 60 * 24 * 7,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "User logged in successfully",
+      user: {
+        id: user._id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        image: user.image,
+      },
+    });
+  } catch (error) {
+    console.error("Error Logging user:", error);
+    res.status(500).json({
+      error: "Error Logging User",
+    });
+  }
+};
+
 
 export const logout = async (req, res) => {
-    try {
-        res.clearCookie("jwt", {
-            httpOnly:true,
-            sameSite:"none",
-            secure:process.env.NODE_ENV !== "development"
-        })
+  try {
+    res.clearCookie("jwt", {
+      httpOnly: true,
+      sameSite: "none",
+      secure: process.env.NODE_ENV !== "development",
+    });
 
-        res.status(201).json({
-         success: true,
-         message:"User logged out successfully",   
-        })
+    res.status(200).json({
+      success: true,
+      message: "User logged out successfully",
+    });
+  } catch (error) {
+    console.error("Error Logging out user:", error);
+    res.status(500).json({
+      error: "Error Logging out User",
+    });
+  }
+};
 
-    } catch (error) {
-        console.error("Error Logging out user:", error)
-        res.status(500).json({
-            error:"Error Logging out User"
-        })
-    }
-}
 
 export const check = async (req, res) => {
-    try {
-        res.status(200).json({
-         success:true,
-         message:"User authenticated successfully",
-         user:req.user
-        })
-    } catch (error) {
-        console.error("Error checking user:", error)
-        res.status(500).json({
-            error:"Error checking User"
-        })
-    }
-}
+  try {
+
+    // console.log("req.user", req);
+    
+    res.status(200).json({
+      success: true,
+      message: "User authenticated successfully",
+      user: req.user,
+    });
+  } catch (error) {
+    console.error("Error checking user:", error);
+    res.status(500).json({
+      error: "Error checking User",
+    });
+  }
+};

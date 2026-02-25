@@ -1,60 +1,57 @@
-import { prisma } from "../lib/db.js";
+import Category from "../models/Category.model.js";
 
-
+ 
 export const getMenu = async (req, res) => {
   try {
-    const categories = await prisma.category.findMany({
-      orderBy: { order: "asc" },
-      include: {
-        dishes: {
-          where: {
-            inMenu: true,
-            isDeleted: false,
-          },
-          orderBy: { createdAt: "asc" },
-          include: {
-            sizes: {
-              select: {
-                id: true,
-                name: true,
-                price: true,
-              },
-            },
-            addons: {
-              include: {
-                addon: {
-                  select: {
-                    id: true,
-                    name: true,
-                    price: true,
-                  },
-                },
-              },
-            },
-          },
+    const categories = await Category.find({})
+      .sort({ order: 1 })
+      .populate({
+        path: "dishes",
+        match: {
+          inMenu: true,
+          isDeleted: false,
         },
-      },
-    });
+        options: { sort: { createdAt: 1 } },
+        populate: [
+          {
+            path: "sizes",
+            select: "name price",
+          },
+          {
+            path: "addons",
+            populate: {
+              path: "addon",
+              select: "name price",
+            },
+          },
+        ],
+      });
+      console.log("categore",categories );
 
     const menu = categories
-      .filter((cat) => cat.dishes.length > 0)
+      .filter((cat) => cat.dishes && cat.dishes.length > 0)
       .map((cat) => ({
         category: cat.name,
         items: cat.dishes.map((dish) => ({
-          id: dish.id,
+          id: dish._id,
           name: dish.name,
           description: dish.description,
           image: dish.image,
           price: dish.basePrice,
           isVeg: dish.foodType === "VEG",
 
-          sizes: dish.sizes,
-          addons: dish.addons.map((a) => a.addon),
-          allergens: dish.allergens,
+          sizes: dish.sizes || [],
+          addons: (dish.addons || []).map((a) => a.addon),
+          allergens: dish.allergens || [],
         })),
       }));
 
-    res.json({ success: true, menu });
+      console.log("menu", menu);
+      
+    res.json({
+      success: true,
+      menu,
+    });
   } catch (error) {
     console.error("Get Menu Error:", error);
     res.status(500).json({
@@ -64,43 +61,31 @@ export const getMenu = async (req, res) => {
   }
 };
 
+
 export const getMenuCategories = async (req, res) => {
   try {
-    const categories = await prisma.category.findMany({
-      orderBy: { order: "asc" },
-      where: {
-        dishes: {
-          some: {
-            status: "AVAILABLE",
-            inMenu: true,
-            isDeleted: false,
-          },
+    const categories = await Category.find({})
+      .sort({ order: 1 })
+      .populate({
+        path: "dishes",
+        match: {
+          inMenu: true,
+          isDeleted: false,
         },
-      },
-      select: {
-        id: true,
-        name: true,
-        _count: {
-          select: {
-            dishes: {
-              where: {
-                status: "AVAILABLE",
-                inMenu: true,
-                isDeleted: false,
-              },
-            },
-          },
-        },
-      },
-    });
+        select: "_id",
+      });
+
+    const filteredCategories = categories
+      .filter((c) => c.dishes && c.dishes.length > 0)
+      .map((c) => ({
+        id: c._id,
+        name: c.name,
+        count: c.dishes.length,
+      }));
 
     res.json({
       success: true,
-      categories: categories.map((c) => ({
-        id: c.id,
-        name: c.name,
-        count: c._count.dishes,
-      })),
+      categories: filteredCategories,
     });
   } catch (error) {
     console.error("Get Categories Error:", error);
