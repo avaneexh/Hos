@@ -7,10 +7,12 @@ import cors from "cors"
 import authRoutes from "./routes/auth.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
 import menuRoutes from "./routes/menu.routes.js";
+import connectDB from "./lib/db.js";
 
 
 dotenv.config();
 
+connectDB();
 
 const app = express();
 
