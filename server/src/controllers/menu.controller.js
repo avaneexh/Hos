@@ -26,7 +26,7 @@ export const getMenu = async (req, res) => {
           },
         ],
       });
-      console.log("categore",categories );
+      // console.log("categore",categories );
 
     const menu = categories
       .filter((cat) => cat.dishes && cat.dishes.length > 0)
@@ -46,7 +46,7 @@ export const getMenu = async (req, res) => {
         })),
       }));
 
-      console.log("menu", menu);
+      // console.log("menu", menu);
       
     res.json({
       success: true,
