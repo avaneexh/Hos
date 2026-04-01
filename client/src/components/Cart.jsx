@@ -34,7 +34,7 @@ const Cart = () => {
       total: payableTotal,
     });
 
-    navigate("/checkout-loading");
+    navigate("/checkout");
   };
 
   return (
