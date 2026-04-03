@@ -8,6 +8,7 @@ import authRoutes from "./routes/auth.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
 import menuRoutes from "./routes/menu.routes.js";
 import connectDB from "./lib/db.js";
+import paymentRoute from "./routes/payment.routes.js";
 
 
 dotenv.config();
@@ -32,6 +33,8 @@ app.get("/", (req, res) =>{
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/admin", adminRoutes);
 app.use("/api/v1/menu", menuRoutes);
+app.use("/api/v1/payment", paymentRoute);
+
 
 app.listen(process.env.PORT, ()=> {
     console.log("Server is running on port 8000")
